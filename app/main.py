@@ -79,7 +79,7 @@ async def user_login(new_user : UserLogin):
         # add user to system
         sql = "INSERT INTO test (firstname, lastname, username, password) VALUES (%s, %s, %s, %s) ON CONFLICT (username) DO NOTHING " 
         data = new_user.firstname, new_user.lastname, new_user.username, new_user.password
-        cursor.execute(sql, data)
+        cursor.execute(sql, (data,))
         connection.commit()
 
     except Exception as error: 
@@ -91,20 +91,23 @@ async def user_login(new_user : UserLogin):
 @app.get("/users/{user_id}", status_code=status.HTTP_200_OK)
 def get_user_by_id(user_id: int):
 
-    cursor.execute(''' SELECT * FROM test WHERE id = (%s)''', str(user_id))
+    user_id = str(user_id)
+    cursor.execute(''' SELECT * FROM test WHERE id = %s''', (user_id,))
     user = cursor.fetchone()
 
     if not user: raise HTTPException(status.HTTP_404_NOT_FOUND, f"User with ID {user_id} was not found")
 
     return {"User": user}
 
+
 @app.delete("/users/delete/{user_id}", status_code=status.HTTP_200_OK)
 def delete_user_by_id(user_id: int):
 
-    cursor.execute(''' DELETE FROM test WHERE id = (%s) RETURNING * ''', str(user_id))
+    user_id = str(user_id)
+    cursor.execute(''' DELETE FROM test WHERE id = (%s) RETURNING * ''', (user_id,))
     deleted_user = cursor.fetchone()
     connection.commit()
 
-    if not deleted_user == None: raise HTTPException(status.HTTP_404_NOT_FOUND, f"User with ID {user_id} was not found")
+    if deleted_user == None: raise HTTPException(status.HTTP_404_NOT_FOUND, f"User with ID {user_id} does not exist")
 
     return Response(status.HTTP_204_NO_CONTENT)
