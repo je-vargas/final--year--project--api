@@ -68,12 +68,12 @@ async def user_login(new_user : UserLogin):
     except EmailNotValidError as error: 
         raise HTTPException(status.HTTP_400_BAD_REQUEST,f"{error}")
 
-    # try: 
-    #     # check user doens't exist otherwise add them
-    #     cursor.execute(f''' SELECT * FROM test WHERE id = '{new_user.username}' ''')
-    #     post = cursor.fetchone()
-    # except Exception as error: 
-    #     print(f"\nError: {error}")
+    # check user doens't exist otherwise add them
+    cursor.execute(''' SELECT * FROM test WHERE username = %s ''', (new_user.username,))
+    post = cursor.fetchone()
+
+    if post != None: raise HTTPException(status.HTTP_409_CONFLICT, f"Email address: {new_user.username} already exists | Try resetting password")
+
 
     try: 
         # add user to system
