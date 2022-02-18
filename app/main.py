@@ -1,113 +1,100 @@
-from fastapi import FastAPI, HTTPException, status
-from datetime import datetime
-from typing import Optional
-from pydantic import BaseModel, ValidationError, validator
 from email_validator import validate_email, EmailNotValidError
-from psycopg2.extras import RealDictCursor
-import psycopg2
-import time
+from fastapi import Depends, FastAPI, HTTPException, status, Response
+from sqlalchemy import select, insert, update, delete
+from sqlalchemy.orm import Session
+from typing import Optional, List
+from . import models
+from . import schemas
+from .database import SessionLocal, engine, get_db 
 
-class UserLogin(BaseModel):
-    firstname: str
-    lastname: str
-    username: str
-    password: str
-    created: Optional[datetime] = None
-
-    @validator("username")
-    def validate_login_username(cls, username):
-        if username == "": 
-            raise ValueError("Usernmame must not be empty")
-
-        return username
-    
-    @validator("password")
-    def validate_login_password(cls, password):
-        if password == "": raise ValueError("Usernmame must not be empty")
-        if len(password) < 8 : raise ValueError("Password must be 8 characters long")
-        return password
-
-#: -------------------------------------------- DB Connection -------------------------------------------- !
-
-while True:
-    try:
-        connection = psycopg2.connect(
-            host = 'localhost', 
-            database = 'elvolunteer', 
-            user = 'juanestebanvargassalamanca', 
-            cursor_factory = RealDictCursor)
-        cursor = connection.cursor()
-        print("Fatty Database is wired up --- COFFEEEEE!!")
-        break
-    except Exception as err:
-        print("\nConnection to Database - Junglesn Massive Failed")
-        print(f"\nError: {err}")
-        time.sleep(3)
-
-#: -------------------------------------------- ENPOINTS -------------------------------------------- !
-#: Order of endpoints matter!
+models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
-@app.get("/")
-def read_root():
-    return {"Health": "OK"}
+
+
 
 # #* q here is a query string passed in the url http://localhost:8000/items/5?q=somequery
 # @app.get("/items/{item_id}")
 # def read_item(item_id: int, q: Optional[str] = None):
 #     return {"item_id": item_id, "q": q}
 
-@app.post("/users/login", status_code=status.HTTP_201_CREATED)
-async def user_login(new_user : UserLogin):
+@app.get("/")
+def read_root():
+    return {"Health": "OK"}
 
-    post = None
+
+@app.post("/users/login", status_code=status.HTTP_201_CREATED, response_model=schemas.UserLogin)
+async def user_login(new_user: schemas.UserLogin, db: Session = Depends(get_db)):
 
     try:
         valid_email = validate_email(new_user.username)
     except EmailNotValidError as error: 
         raise HTTPException(status.HTTP_400_BAD_REQUEST,f"{error}")
 
-    # check user doens't exist otherwise add them
-    cursor.execute(''' SELECT * FROM test WHERE username = %s ''', (new_user.username,))
-    post = cursor.fetchone()
+    user_exists = db.query(models.Test).filter(models.Test.username == new_user.username).first()
 
-    if post != None: raise HTTPException(status.HTTP_409_CONFLICT, f"Email address: {new_user.username} already exists | Try resetting password")
+    if user_exists != None: raise HTTPException(status.HTTP_409_CONFLICT, f"Email address: {new_user.username} already exists | Try resetting password")
+
+    add_user = models.Test(**new_user.dict())
+    db.add(add_user)
+    db.commit()
+    db.refresh(add_user)
+
+    return new_user
 
 
-    try: 
-        # add user to system
-        sql = "INSERT INTO test (firstname, lastname, username, password) VALUES (%s, %s, %s, %s) ON CONFLICT (username) DO NOTHING " 
-        data = new_user.firstname, new_user.lastname, new_user.username, new_user.password
-        cursor.execute(sql, (data,))
-        connection.commit()
+@app.get("/users/", status_code=status.HTTP_200_OK, response_model=List[schemas.UserLogin])
+def get_all_users(db: Session = Depends(get_db)):
 
-    except Exception as error: 
-        print(f"\nError: {error}")
+    user_returned = db.query(models.Test).all()
 
-    return {"Successul": new_user}
+    if user_returned == None: raise HTTPException(status.HTTP_404_NOT_FOUND, f"User with ID {user_id} was not found")
+
+    return user_returned
+
     
+@app.get("/users/email", status_code=status.HTTP_200_OK)
+def get_user_by_email(user: schemas.Email, db: Session = Depends(get_db)):
+
+    user_returned = db.query(models.Test).filter(models.Test.username == user.username).first()
+    
+    if not user_returned: raise HTTPException(status.HTTP_404_NOT_FOUND, f"User with ID {user_id} was not found")
+
+    return user_returned
 
 @app.get("/users/{user_id}", status_code=status.HTTP_200_OK)
-def get_user_by_id(user_id: int):
+def get_user_by_id(user_id: int,  db: Session = Depends(get_db)):
 
-    user_id = str(user_id)
-    cursor.execute(''' SELECT * FROM test WHERE id = %s''', (user_id,))
-    user = cursor.fetchone()
+    user_returned = db.query(models.Test).filter(models.Test.id == user_id).first()
 
-    if not user: raise HTTPException(status.HTTP_404_NOT_FOUND, f"User with ID {user_id} was not found")
+    if user_returned == None: raise HTTPException(status.HTTP_404_NOT_FOUND, f"User with ID {user_id} was not found")
 
-    return {"User": user}
+    return user_returned
 
+
+
+@app.delete("/users/delete", status_code=status.HTTP_200_OK)
+def delete_user_by_email(login: schemas.Email,  db: Session = Depends(get_db)):
+
+    user_returned = db.query(models.Test).filter(models.Test.username == login.username)
+
+    if user_returned == None: raise HTTPException(status.HTTP_404_NOT_FOUND, f"User with ID {user_id} does not exist")
+
+    user_returned.delete(synchronize_session=False)
+    db.commit()
+    
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 @app.delete("/users/delete/{user_id}", status_code=status.HTTP_200_OK)
-def delete_user_by_id(user_id: int):
+def delete_user_by_id(user_id: int,  db: Session = Depends(get_db)):
 
-    user_id = str(user_id)
-    cursor.execute(''' DELETE FROM test WHERE id = (%s) RETURNING * ''', (user_id,))
-    deleted_user = cursor.fetchone()
-    connection.commit()
+    user_returned = db.query(models.Test).filter(models.Test.id == user_id)
 
+    user_returned.delete(synchronize_session=False)
+    db.commit()
+    
     if deleted_user == None: raise HTTPException(status.HTTP_404_NOT_FOUND, f"User with ID {user_id} does not exist")
 
-    return Response(status.HTTP_204_NO_CONTENT)
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
+
