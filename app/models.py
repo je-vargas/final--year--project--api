@@ -1,6 +1,7 @@
 from sqlalchemy import Boolean, Column, ForeignKey, Integer, String
 from sqlalchemy.sql.expression import text
 from sqlalchemy.sql.sqltypes import TIMESTAMP
+from sqlalchemy.orm import relationship
 
 from .database import Base
 
@@ -41,7 +42,7 @@ class UserAccount(Base):
     __tablename__ = "userAccount"
 
     id = Column(Integer, primary_key=True, index=True)
-    contactDetails_id = Column(Integer, ForeignKey("contactDetails.id"), nullable=False)
+    contactDetails_id = Column(Integer, ForeignKey("contactDetails.id", ondelete="CASCADE"), nullable=False)
     password = Column(String, nullable=False)
     dateCreated = Column(TIMESTAMP(timezone=True), nullable=False)
     lastLogin = Column(TIMESTAMP(timezone=True), nullable=False)
@@ -49,14 +50,14 @@ class VolunteerCV(Base):
     __tablename__ = "volunteerCV"
 
     id = Column(Integer, primary_key=True, index=True)
-    userAccount_id = Column(Integer, ForeignKey("userAccount.id"), nullable=False)
+    userAccount_id = Column(Integer, ForeignKey("userAccount.id", ondelete="CASCADE"), nullable=False)
     cv = Column(String, unique=True, nullable=True)
 
 class VolunteerSkills(Base):
     __tablename__ = "volunteerSkills"
 
     id = Column(Integer, primary_key=True, index=True)
-    userAccount_id = Column(Integer, ForeignKey("userAccount.id"), nullable=False)
+    userAccount_id = Column(Integer, ForeignKey("userAccount.id", ondelete="CASCADE"), nullable=False)
     experience = Column(String)
     fieldOfStudy = Column(String)
     degree = Column(String)
@@ -65,30 +66,30 @@ class AccountRoles(Base):
     __tablename__ = "accountRoles"
 
     id = Column(Integer, primary_key=True, index=True)
-    userAccountId = Column(Integer, ForeignKey("userAccount.id"), nullable=False)
-    roles_id = Column(Integer, ForeignKey("roles.id"), nullable=False)
+    userAccountId = Column(Integer, ForeignKey("userAccount.id", ondelete="CASCADE"), nullable=False)
+    roles_id = Column(Integer, ForeignKey("roles.id", ondelete="CASCADE"), nullable=False)
 
 class Employer(Base):
     __tablename__ = "employer"
 
     id = Column(Integer, primary_key=True, index=True)
-    companyName = Column(Integer, ForeignKey("userAccount.id"), nullable=False)
-    industry_id = Column(Integer, ForeignKey("industry.id"), nullable=False)
+    companyName = Column(Integer, ForeignKey("userAccount.id", ondelete="CASCADE"), nullable=False)
+    industry_id = Column(Integer, ForeignKey("industry.id", ondelete="CASCADE"), nullable=False)
     companyDescription = Column(String, nullable=True)
 
 class EmployerContacts(Base):
     __tablename__ = "employerContacts"
 
     id = Column(Integer, primary_key=True, index=True)
-    ContactDetails_id = Column(Integer, ForeignKey("contactDetails.id"), nullable=False)
-    employer_id = Column(Integer, ForeignKey("employer.id"), nullable=False)
+    ContactDetails_id = Column(Integer, ForeignKey("contactDetails.id", ondelete="CASCADE"), nullable=False)
+    employer_id = Column(Integer, ForeignKey("employer.id", ondelete="CASCADE"), nullable=False)
 
 class Jobs(Base):
     __tablename__ = "jobs"
 
     id = Column(Integer, primary_key=True, index=True)
-    employer_id = Column(Integer, ForeignKey("employer.id"), index=True)
-    category_id = Column(Integer, ForeignKey("category.id"), index=True)
+    employer_id = Column(Integer, ForeignKey("employer.id", ondelete="CASCADE"), index=True)
+    category_id = Column(Integer, ForeignKey("category.id", ondelete="CASCADE"), index=True)
     jobDescription = Column(String, nullable=False)
     jobTitle = Column(String, nullable=False)
     numberOfPositions = Column(Integer, nullable=False)
@@ -97,20 +98,21 @@ class Jobs(Base):
     endDate = Column(TIMESTAMP(timezone=True), nullable=True)
     applicationDeadline = Column(TIMESTAMP(timezone=True), nullable=True)
 
+    employer = relationship("Employer")
 
 class JobSchedule(Base):
     __tablename__ = "jobSchedule"
     
     id = Column(Integer, primary_key=True, index=True)
-    job_id = Column(Integer, ForeignKey("jobs.id"), index=True)
-    workingSchedule_id = Column(Integer, ForeignKey("workingSchedule.id"), index=True)
+    job_id = Column(Integer, ForeignKey("jobs.id", ondelete="CASCADE"), index=True)
+    workingSchedule_id = Column(Integer, ForeignKey("workingSchedule.id", ondelete="CASCADE"), index=True)
 
 class UserVolunteeringHistory(Base):
     __tablename__ = "userVolunteeringHistory"
 
     id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("userAccount.id"), index=True)
-    job_id = Column(Integer, ForeignKey("jobs.id"), index=True)
+    user_id = Column(Integer, ForeignKey("userAccount.id", ondelete="CASCADE"), index=True)
+    job_id = Column(Integer, ForeignKey("jobs.id", ondelete="CASCADE"), index=True)
 
 class Test(Base):
     __tablename__ = "test"
@@ -121,8 +123,4 @@ class Test(Base):
     username = Column(String, nullable=False)
     password = Column(String, nullable=False)
     createdOn = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text('now()'))
-
-
-
-
     
