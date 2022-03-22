@@ -11,7 +11,6 @@ class ContactDetails(Base):
     id = Column(Integer, primary_key=True, index=True)
     firstName = Column(String, nullable=False)
     lastName = Column(String, nullable=False)
-    emailAddress = Column(TIMESTAMP(timezone=True), unique=True, nullable=False)
     telephoneNumber = Column(TIMESTAMP(timezone=True), unique=True, nullable=False, server_default=text('now()'))
 
 class Roles(Base):
