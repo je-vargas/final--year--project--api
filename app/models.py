@@ -30,7 +30,7 @@ class WorkingSchedule(Base):
     __tablename__ = "workingSchedule"
     
     id = Column(Integer, primary_key=True, index=True)
-    schedule = Column(String(), index=True)
+    schedule = Column(String, index=True)
 
 class Industry(Base):
     __tablename__ = "industry"
@@ -42,8 +42,9 @@ class UserAccount(Base):
     __tablename__ = "userAccount"
 
     id = Column(Integer, primary_key=True, index=True)
-    contactDetails_id = Column(Integer, ForeignKey("contactDetails.id", ondelete="CASCADE"), nullable=False)
+    username = Column(String, nullable=False)
     password = Column(String, nullable=False)
+    contactDetails_id = Column(Integer, ForeignKey("contactDetails.id", ondelete="CASCADE"), nullable=False)
     dateCreated = Column(TIMESTAMP(timezone=True), nullable=False)
     lastLogin = Column(TIMESTAMP(timezone=True), nullable=False)
 class VolunteerCV(Base):
