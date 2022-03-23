@@ -13,6 +13,9 @@ class ContactDetails(Base):
     lastName = Column(String, nullable=False)
     telephoneNumber = Column(String, nullable=False, unique=True)
 
+    def __repr__(self): 
+        return "(%s, %s, %s)" % (self.firstName, self.lastName, self.telephoneNumber)
+
 class Roles(Base):
     __tablename__ = "roles"
 
