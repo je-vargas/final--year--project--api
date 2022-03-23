@@ -39,4 +39,19 @@ class NewAccountSchemaOut(BaseModel):
     dateCreated: datetime
   
 
+class UpdateAccountSchemaIn(BaseModel):
+    username: EmailStr
+    firstName: str
+    lastName: str
+    telephoneNumber: str
+
+    @validator("username")
+    def validate_login_username(cls, username):
+        if username == "": 
+            raise ValueError("Username must not be empty")
+        return username
+
+    
+
+
 
