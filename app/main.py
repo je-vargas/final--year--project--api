@@ -2,8 +2,6 @@ from fastapi import FastAPI
 from fastapi.security import OAuth2PasswordBearer
 from .Routers import users, auth, health
 
-from pydantic import BaseSettings, Field
-
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 app = FastAPI()
