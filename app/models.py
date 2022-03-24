@@ -14,7 +14,7 @@ class ContactDetails(Base):
     telephoneNumber = Column(String, nullable=False, unique=True)
 
     def __repr__(self): 
-        return "(%s, %s, %s)" % (self.firstName, self.lastName, self.telephoneNumber)
+        return "(%i, %s, %s, %s)" % (self.id, self.firstName, self.lastName, self.telephoneNumber)
 
 class Roles(Base):
     __tablename__ = "roles"
@@ -49,6 +49,9 @@ class UserAccount(Base):
     contactDetails_id = Column(Integer, ForeignKey("contactDetails.id", ondelete="CASCADE"), nullable=False)
     dateCreated = Column(TIMESTAMP(timezone=True), nullable=False)
     lastLogin = Column(TIMESTAMP(timezone=True), nullable=False)
+
+    def __repr__(self): 
+        return "({0}, {1}, {2}, {3})".format(self.username, self.contactDetails_id ,self.dateCreated, self.lastLogin)
 class VolunteerCV(Base):
     __tablename__ = "volunteerCV"
 
