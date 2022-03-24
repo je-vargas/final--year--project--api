@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 
 from ..database import get_db
 from ..import models, utils, schemas, outh2
-from ..Schemas.usersSchemas import NewAccountSchemaIn, NewAccountSchemaOut, UpdateAccountSchemaIn
+from ..Schemas.usersSchemas import NewAccountSchemaIn, NewAccountSchemaOut, UpdateAccountSchemaIn, UpdateAccountChangesSchema
 from ..Repositories import userRepository, contactRepository
 
 router = APIRouter(
@@ -150,11 +150,55 @@ def new_recruiter(user: NewAccountSchemaIn, db: Session = Depends(get_db)):
 
 #: --------- UPDATE ---------
 
-@router.post("/account/update", response_model=UpdateAccountSchemaIn, status_code=status.HTTP_200_OK)
+@router.patch("/account/update", response_model=UpdateAccountSchemaIn, status_code=status.HTTP_200_OK)
 def account_update(user_update: UpdateAccountSchemaIn, db: Session = Depends(get_db)):
 
-    user = userRepository.get_user_by_username(user_update.id, db)
-    if user.first() == None: raise HTTPException(status.HTTP_409_CONFLICT, f"Email address: {user_update.username} does not exists | Try registering")
+    user = userRepository.get_user_account_details_by_id(user_update.id, db)
+    if user.all() == []: raise HTTPException(status.HTTP_409_CONFLICT, f"User with id: {user_update.id} does not exist | Try registering")
+
+    existing_data = None
+
+    for login, contact in user.all():
+        existing_data = UpdateAccountChangesSchema(
+            id=login.id,
+            username=login.username,
+            firstName=contact.firstName,
+            lastName=contact.lastName,
+            telephoneNumber=contact.telephoneNumber,
+            contactDetails_id=login.contactDetails_id
+        )
+    update_data_dict = dict(user_update)
+    existing_data_dict = dict(existing_data)
+
+    #* compare existing user to new update and returns values changed
+    changes = {value: update_data_dict[value] for value in update_data_dict if value in existing_data_dict and update_data_dict[value] != existing_data_dict[value]}    
+    
+    user_changes = {key:value for key, value in changes.items() if key == "username"}
+    contact_changes = {key:value for key, value in changes.items() if key != "username"}
+
+ 
+    if user_changes: 
+        user_id = existing_data_dict.get("id")
+        updated_user = userRepository.update_user_account_by_id(user_id, user_changes, db)
+
+    if contact_changes:
+        contact_id = existing_data_dict.get("contactDetails_id")
+        updated_contact_details = contactRepository.update_contact_details_by_id(contact_id, contact_changes, db)
+
+    #update user
+    return 
+
+
+
+
+
+
+
+    
+
+
+
+    
 
     
 
