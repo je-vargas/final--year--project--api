@@ -40,10 +40,11 @@ class NewAccountSchemaOut(BaseModel):
   
 
 class UpdateAccountSchemaIn(BaseModel):
-    username: EmailStr
-    firstName: str
-    lastName: str
-    telephoneNumber: str
+    id: int
+    username: Optional[EmailStr] = None
+    firstName: Optional[str] = None
+    lastName: Optional[str] = None
+    telephoneNumber: Optional[str] = None
 
     @validator("username")
     def validate_login_username(cls, username):
@@ -51,6 +52,8 @@ class UpdateAccountSchemaIn(BaseModel):
             raise ValueError("Username must not be empty")
         return username
 
+class UpdateAccountChangesSchema(UpdateAccountSchemaIn):
+    contactDetails_id: Optional[int]
     
 
 
