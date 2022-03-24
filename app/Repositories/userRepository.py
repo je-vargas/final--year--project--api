@@ -21,6 +21,19 @@ def create_account_role(account_role: AccountRoles, db):
 
     return account_role
 
+def update_user_account_by_id(id, user, db):
+    try:
+        query = db.query(UserAccount).filter(UserAccount.id == id)
+        query.update(user, synchronize_session=False)
+        db.commit()
+        user_update = query.first()
+        
+    except Exception as e:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, e.orig.pgerror)
+
+    return user_update
+
+
 def get_user_by_username(username, db):
 
     user = None
@@ -42,6 +55,20 @@ def get_user_by_id(user_id, db):
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "\nCouln't fetch user with id: {0} | Error: {1}\n".format(user_id, e.orig.pgerror))
     
     return user
+
+def get_user_account_details_by_id(user_id, db):
+
+    user_details = None
+    try:
+        user_details = db.query(UserAccount, ContactDetails).\
+            filter(UserAccount.id == user_id).\
+            join(ContactDetails).\
+            filter(ContactDetails.id == UserAccount.contactDetails_id)
+
+    except Exception as e:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "\nCouln't fetch user with id: {0} | Error: {1}\n".format(user_id, e.orig.pgerror))
+    
+    return user_details
 
 def delete_user_by_object(user, user_contact, db):
     try:

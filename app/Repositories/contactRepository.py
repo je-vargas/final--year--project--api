@@ -12,6 +12,19 @@ def create_new_contact_details(contact_details: ContactDetails , db):
     
     return contact_details
 
+
+def update_contact_details_by_id(id, contact_details: ContactDetails, db):
+    try:
+        query = db.query(ContactDetails).filter(ContactDetails.id == id)
+        query.update(contact_details, synchronize_session=False)
+        db.commit()
+        contact_details_update = query.first()
+
+    except Exception as e:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, e.orig.pgerror)
+
+    return contact_details_update
+
 def get_contact_details_by_id(id, db):
 
     cocontact_details = None
