@@ -1,15 +1,14 @@
 from jose import JWTError, jwt
 from datetime import datetime, timedelta
 from typing import Optional
-from . import schemas, config
+from . import schemas
+from .config import settings
 from fastapi import Depends, status, HTTPException
 from fastapi.security import OAuth2PasswordBearer
 
-settings = config.get_settings()
-
 SECRET_KEY = settings.secret_key
 ALGORITHM = settings.algorithm
-ACCESS_TOKEN_EXPIRY_MINUTES = settings.access_token_expiry_time
+ACCESS_TOKEN_EXPIRY_MINUTES = settings.access_token
 
 oauth2_scheme =OAuth2PasswordBearer(tokenUrl="login")
 

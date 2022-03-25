@@ -1,3 +1,4 @@
 {
     // "python.linting.pylintEnabled": true,
+    "debug.console.fontSize": 20,
 }
