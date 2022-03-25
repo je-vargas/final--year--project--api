@@ -195,22 +195,6 @@ def account_update(user_update: UpdateAccountSchema, db: Session = Depends(get_d
     return new_changes
 
 
-
-
-
-
-
-    
-
-
-
-    
-
-    
-
-
-
-
 #: --------- READ ---------
 
 @router.get("", status_code=status.HTTP_200_OK, response_model=List[schemas.UserOut])
@@ -240,6 +224,17 @@ def get_user_by_id(user_id: int,  db: Session = Depends(get_db)):
     if user_returned == None: raise HTTPException(status.HTTP_404_NOT_FOUND, f"User with ID {user_id} was not found")
 
     return user_returned
+
+@router.get("/{user_id}", status_code=status.HTTP_200_OK)
+def get_user_job_history (user_id: int,  db: Session = Depends(get_db)):
+
+    user_returned = db.query(models.Test).filter(models.Test.id == user_id).first()
+
+    if user_returned == None: raise HTTPException(status.HTTP_404_NOT_FOUND, f"User with ID {user_id} was not found")
+
+    return user_returned
+
+
 
 #: --------- DELETE ---------
 
