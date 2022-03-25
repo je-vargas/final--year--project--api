@@ -25,7 +25,7 @@ class Roles(Base):
 class Category(Base):
     __tablename__ = "category"
 
-    id = Column(Integer, primary_key=True, index=True)
+    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     category = Column(String, unique=True, nullable=False)
 
 class WorkingSchedule(Base):
