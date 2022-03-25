@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 
 from ..database import get_db
 from ..import models, utils, schemas, outh2
-from ..Schemas.usersSchemas import NewAccountSchemaIn, NewAccountSchemaOut, UpdateAccountSchemaIn, UpdateAccountChangesSchema
+from ..Schemas.usersSchemas import NewAccountSchemaIn, NewAccountSchemaOut, UpdateAccountSchema, UpdateAccountChangesSchema
 from ..Repositories import userRepository, contactRepository
 
 router = APIRouter(
@@ -150,8 +150,8 @@ def new_recruiter(user: NewAccountSchemaIn, db: Session = Depends(get_db)):
 
 #: --------- UPDATE ---------
 
-@router.patch("/account/update", response_model=UpdateAccountSchemaIn, status_code=status.HTTP_200_OK)
-def account_update(user_update: UpdateAccountSchemaIn, db: Session = Depends(get_db)):
+@router.patch("/account/update", response_model=UpdateAccountSchema, status_code=status.HTTP_200_OK)
+def account_update(user_update: UpdateAccountSchema, db: Session = Depends(get_db)):
 
     user = userRepository.get_user_account_details_by_id(user_update.id, db)
     if user.all() == []: raise HTTPException(status.HTTP_409_CONFLICT, f"User with id: {user_update.id} does not exist | Try registering")
@@ -185,8 +185,14 @@ def account_update(user_update: UpdateAccountSchemaIn, db: Session = Depends(get
         contact_id = existing_data_dict.get("contactDetails_id")
         updated_contact_details = contactRepository.update_contact_details_by_id(contact_id, contact_changes, db)
 
-    #update user
-    return 
+    new_changes = UpdateAccountSchema(
+        id=updated_user.id, 
+        username=updated_user.username, 
+        firstName=updated_contact_details.firstName,
+        lastName=updated_contact_details.lastName, 
+        telephoneNumber=updated_contact_details.telephoneNumber
+    )
+    return new_changes
 
 
 

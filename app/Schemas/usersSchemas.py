@@ -39,7 +39,7 @@ class NewAccountSchemaOut(BaseModel):
     dateCreated: datetime
   
 
-class UpdateAccountSchemaIn(BaseModel):
+class UpdateAccountSchema(BaseModel):
     id: int
     username: Optional[EmailStr] = None
     firstName: Optional[str] = None
@@ -52,9 +52,8 @@ class UpdateAccountSchemaIn(BaseModel):
             raise ValueError("Username must not be empty")
         return username
 
-class UpdateAccountChangesSchema(UpdateAccountSchemaIn):
+class UpdateAccountChangesSchema(UpdateAccountSchema):
     contactDetails_id: Optional[int]
-    
 
 
 
