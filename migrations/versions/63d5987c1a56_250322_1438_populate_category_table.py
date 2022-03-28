@@ -22,10 +22,6 @@ depends_on = None
 
 def upgrade():
 
-    print("\n")
-    print(type(tb.Category.__tablename__))
-    print("\n")
-
     category_table = table(
         tb.Category.__tablename__,
         sa.Column("category", String)
