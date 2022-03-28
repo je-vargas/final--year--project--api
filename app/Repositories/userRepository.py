@@ -1,5 +1,5 @@
 from fastapi import Depends, HTTPException, status
-from ..models import ContactDetails, UserAccount, AccountRoles
+from ..models import ContactDetails, UserAccount, AccountRoles, Roles
 
 def create_new_user(new_user: UserAccount, db):
     try:
@@ -69,6 +69,23 @@ def get_user_account_details_by_id(user_id, db):
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "\nCouln't fetch user with id: {0} | Error: {1}\n".format(user_id, e.orig.pgerror))
     
     return user_details
+
+def get_user_account_details_by_username(username, db):
+
+    user_details = None
+    try:
+        user_details = db.query(UserAccount, ContactDetails, AccountRoles, Roles).\
+            filter(UserAccount.username == username).\
+            join(ContactDetails).filter(ContactDetails.id == UserAccount.contactDetails_id).\
+            join(AccountRoles).filter(AccountRoles.userAccountId == UserAccount.id).\
+            join(Roles).filter(Roles.id == AccountRoles.roles_id)
+
+    except Exception as e:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "\nCouln't fetch user with id: {0} | Error: {1}\n".format(user_id, e.orig.pgerror))
+    
+    return user_details
+
+    
 
 def delete_user_by_object(user, user_contact, db):
     try:

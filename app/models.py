@@ -22,6 +22,8 @@ class Roles(Base):
     id = Column(Integer, primary_key=True, index=True)
     roles = Column(String, unique=True, nullable=False)
 
+    def __repr__(self): 
+        return "({0})".format(self.roles)
 class Category(Base):
     __tablename__ = "category"
 
@@ -74,6 +76,9 @@ class AccountRoles(Base):
     id = Column(Integer, primary_key=True, index=True)
     userAccountId = Column(Integer, ForeignKey("userAccount.id", ondelete="CASCADE"), nullable=False)
     roles_id = Column(Integer, ForeignKey("roles.id", ondelete="CASCADE"), nullable=False)
+    
+    def __repr__(self): 
+        return "({0}, {1})".format(self.userAccountId, self.roles_id)
 
 class Employer(Base):
     __tablename__ = "employer"

@@ -3,8 +3,7 @@ from datetime import datetime
 from pydantic import (
     BaseModel, 
     validator, 
-    EmailStr,
-    Pattern
+    EmailStr
     )
 
 class NewAccountSchemaIn(BaseModel):
