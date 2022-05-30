@@ -29,6 +29,7 @@ class Category(Base):
 
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     category = Column(String, unique=True, nullable=False)
+    industry_id = Column(Integer, ForeignKey("industry.id", ondelete="CASCADE"), nullable=False)
 
 class WorkingSchedule(Base):
     __tablename__ = "workingSchedule"
