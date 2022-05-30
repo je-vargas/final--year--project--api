@@ -26,7 +26,7 @@ def verify_access_tocken(token: str, credentials_exception):
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         id:str = payload.get("user_id")
-        account_role:str = payload.get("account_role")
+        account_role:str = payload.get("role")
 
         if id and account_role is None: raise credentials_exception
 
