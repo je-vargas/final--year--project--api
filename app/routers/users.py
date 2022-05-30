@@ -95,6 +95,8 @@ def new_employeer(user: NewAccountSchemaIn, db: Session = Depends(get_db)):
 
     account_role = userRepository.create_account_role(account_role, db)
 
+    #: need to take infomration about the company
+
     user_out = NewAccountSchemaOut(
         id=new_user.id,
         username=new_user.username,
