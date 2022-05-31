@@ -31,12 +31,6 @@ class Category(Base):
     category = Column(String, unique=True, nullable=False)
     industry_id = Column(Integer, ForeignKey("industry.id", ondelete="CASCADE"), nullable=False)
 
-class WorkingSchedule(Base):
-    __tablename__ = "workingSchedule"
-    
-    id = Column(Integer, primary_key=True, index=True)
-    schedule = Column(String, index=True)
-
 class Industry(Base):
     __tablename__ = "industry"
 
@@ -109,15 +103,9 @@ class Jobs(Base):
     startDate = Column(TIMESTAMP(timezone=True), nullable=True)
     endDate = Column(TIMESTAMP(timezone=True), nullable=True)
     applicationDeadline = Column(TIMESTAMP(timezone=True), nullable=True)
+    workHours = Column(String, nullable=True)
 
     employer = relationship("Employer")
-
-class JobSchedule(Base):
-    __tablename__ = "jobSchedule"
-    
-    id = Column(Integer, primary_key=True, index=True)
-    job_id = Column(Integer, ForeignKey("jobs.id", ondelete="CASCADE"), index=True)
-    workingSchedule_id = Column(Integer, ForeignKey("workingSchedule.id", ondelete="CASCADE"), index=True)
 
 class UserVolunteeringHistory(Base):
     __tablename__ = "userVolunteeringHistory"
