@@ -1,6 +1,7 @@
 from typing import Optional
 from enum import Enum
 from datetime import date
+from globalSchemas import WorkHoursSchema
 from pydantic import (
     BaseModel, 
     validator, 
@@ -13,11 +14,7 @@ class JobSchedule(str, Enum):
     partTime = 'Part Time',
     flexible = 'Flexible',
 
-class WorkHours(str, Enum):
-    sixMore = '6+',
-    fourMore = '4-6',
-    twoMore = '2-4',
-    zeroMore = '0-2',
+
 class JobCategory(str, Enum):
     aircraftDispatcher = 'Aircraft Dispatcher',
     aircraftMechanic = 'Aircraft Mechanic',
@@ -61,7 +58,7 @@ class JobCategory(str, Enum):
 class NewJobSchemaIn(BaseModel):
     jobCategory: JobCategory
     jobSchedule: JobSchedule
-    workHours: WorkHours
+    workHours: WorkHoursSchema
     jobDescription: str
     jobTitle: str
     numberOfPositions: int
