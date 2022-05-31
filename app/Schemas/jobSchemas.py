@@ -1,7 +1,7 @@
 from typing import Optional
 from enum import Enum
 from datetime import date
-from globalSchemas import WorkHoursSchema
+from .globalSchemas import WorkHoursSchema
 from pydantic import (
     BaseModel, 
     validator, 
