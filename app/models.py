@@ -1,6 +1,6 @@
 from sqlalchemy import Boolean, Column, ForeignKey, Integer, String
 from sqlalchemy.sql.expression import text
-from sqlalchemy.sql.sqltypes import TIMESTAMP
+from sqlalchemy.sql.sqltypes import Date, DateTime, TIMESTAMP, DATETIME
 from sqlalchemy.orm import relationship
 
 from .database import Base
@@ -44,8 +44,8 @@ class UserAccount(Base):
     username = Column(String, nullable=False)
     password = Column(String, nullable=False)
     contactDetails_id = Column(Integer, ForeignKey("contactDetails.id", ondelete="CASCADE"), nullable=False)
-    dateCreated = Column(TIMESTAMP(timezone=True), nullable=False)
-    lastLogin = Column(TIMESTAMP(timezone=True), nullable=False)
+    dateCreated = Column(DateTime(timezone=True), nullable=False)
+    lastLogin = Column(DateTime(timezone=True), nullable=False)
 
     def __repr__(self): 
         return "({0}, {1}, {2}, {3})".format(self.username, self.contactDetails_id ,self.dateCreated, self.lastLogin)
@@ -100,9 +100,9 @@ class Jobs(Base):
     jobTitle = Column(String, nullable=False)
     numberOfPositions = Column(Integer, nullable=False)
     onGoingFill = Column(Boolean, nullable=False)
-    startDate = Column(TIMESTAMP(timezone=True), nullable=True)
-    endDate = Column(TIMESTAMP(timezone=True), nullable=True)
-    applicationDeadline = Column(TIMESTAMP(timezone=True), nullable=True)
+    startDate = Column(Date, nullable=True)
+    endDate = Column(Date, nullable=True)
+    applicationDeadline = Column(Date, nullable=True)
     workHours = Column(String, nullable=True)
 
     employer = relationship("Employer")
@@ -122,5 +122,5 @@ class Test(Base):
     lastname = Column(String, nullable=False)
     username = Column(String, nullable=False)
     password = Column(String, nullable=False)
-    createdOn = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text('now()'))
+    createdOn = Column(DateTime(timezone=True), nullable=False, server_default=text('now()'))
     
