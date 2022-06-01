@@ -241,7 +241,7 @@ def get_user_job_history (user_id: int,  db: Session = Depends(get_db)):
 #: --------- DELETE ---------
 
 @router.delete("/delete", status_code=status.HTTP_200_OK)
-def delete_user_by_email(login: schemas.Email,  db: Session = Depends(get_db), current_user: int = Depends(outh2.get_current_user)):
+def delete_user_by_email(login: schemas.Email,  db: Session = Depends(get_db)): #,current_user: int = Depends(outh2.get_current_user)
 
     user_returned = userRepository.get_user_by_username(login.username, db)
     
@@ -257,7 +257,6 @@ def delete_user_by_email(login: schemas.Email,  db: Session = Depends(get_db), c
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 @router.delete("/delete/{user_id}", status_code=status.HTTP_200_OK)
-
 def delete_user_by_id(user_id: int, db: Session = Depends(get_db),):
 
     user_returned = userRepository.get_user_by_id(user_id, db)
