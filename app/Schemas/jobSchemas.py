@@ -22,51 +22,49 @@ class JobCategory(str, Enum):
     airMarshall = 'Air Marshall',
     flightAttendant = 'Flight Attendant',
     trafficAir = 'Traffic Air',
-    actor = 'Actor ',
+    actor = 'Actor',
     museumJobs = 'Museum Jobs',
     musicCondutor = 'Music Condutor',
-    accountant  = 'Accountant ',
+    accountant  = 'Accountant',
     administrativeAssistant = 'Administrative Assistant',
-    advertising  = 'Advertising ',
-    financial  = 'Financial ',
-    operations  = 'Operations ',
-    management  = 'Management ',
-    consultancy  = 'Consultancy ',
+    advertising  = 'Advertising',
+    financial  = 'Financial 111',
+    operations  = 'Operations',
+    management  = 'Management',
+    consultancy  = 'Consultancy',
     financialAdvisor = "Financial Advisor",
-    goverment  = 'Goverment ',
+    goverment  = 'Goverment',
     humanResources = 'Human Resources',
     insuranceAgent = 'Insurance Agent',
     investmentBanker = 'Investment Banker',
-    lawyer  = 'Lawyer ',
-    teaching  = 'Teaching ',
+    lawyer  = 'Lawyer',
+    teaching  = 'Teaching',
     policeOffice = 'Police Office',
-    doctor  = 'Doctor ',
+    doctor  = 'Doctor',
     forensicPsychologist = 'Forensic Psychologist',
-    nurse  = 'Nurse ',
-    midwife  = 'Midwife ',
-    veterinarian  = 'Veterinarian ',
-    psychologist  = 'Psychologist ',
-    waiter = 'Waiter ',
-    sales = 'Sales ',
+    nurse  = 'Nurse',
+    midwife  = 'Midwife',
+    veterinarian  = 'Veterinarian',
+    psychologist  = 'Psychologist',
+    waiter = 'Waiter',
+    sales = 'Sales',
     backendDeveloper = 'Backend Developer',
     systemsAdministrator = 'Systems Administrator',
     softwareEngineer = 'Software Engineer',
-    developer  = 'Developer ',
-    architect  = 'Architect ',
+    developer  = 'Developer',
+    architect  = 'Architect',
     other = 'Other'
 
 class NewJobSchemaIn(BaseModel):
     jobCategory: JobCategory
-    jobSchedule: JobSchedule
-    workHours: WorkHoursSchema
     jobDescription: str
     jobTitle: str
     numberOfPositions: int
     onGoingfill: bool
-    startDate: date
+    startDate: Optional[date]
     endDate: Optional[date]
-    applicationDeadLine: date
-    workingSchedule: Optional[str]
+    applicationDeadLine: Optional[date]
+    workHours: Optional[WorkHoursSchema]
 
 
 
