@@ -85,8 +85,6 @@ def get_user_account_details_by_username(username, db):
     
     return user_details
 
-    
-
 def delete_user_by_object(user, user_contact, db):
     try:
         user.delete(synchronize_session=False)
