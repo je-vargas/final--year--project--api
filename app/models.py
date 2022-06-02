@@ -4,18 +4,6 @@ from sqlalchemy.sql.sqltypes import Date, DateTime, TIMESTAMP, DATETIME
 from sqlalchemy.orm import relationship
 
 from .database import Base
-
-class ContactDetails(Base):
-    __tablename__ = "contactDetails"
-
-    id = Column(Integer, primary_key=True, index=True)
-    firstName = Column(String, nullable=False)
-    lastName = Column(String, nullable=False)
-    telephoneNumber = Column(String, nullable=False, unique=True)
-
-    def __repr__(self): 
-        return "(%i, %s, %s, %s)" % (self.id, self.firstName, self.lastName, self.telephoneNumber)
-
 class Roles(Base):
     __tablename__ = "roles"
 
@@ -43,12 +31,14 @@ class UserAccount(Base):
     id = Column(Integer, primary_key=True, index=True)
     username = Column(String, nullable=False)
     password = Column(String, nullable=False)
-    contactDetails_id = Column(Integer, ForeignKey("contactDetails.id", ondelete="CASCADE"), nullable=False)
+    firstName = Column(String, nullable=False)
+    lastName = Column(String, nullable=False)
+    telephoneNumber = Column(String, nullable=False, unique=True)
     dateCreated = Column(DateTime(timezone=True), nullable=False)
     lastLogin = Column(DateTime(timezone=True), nullable=False)
 
     def __repr__(self): 
-        return "({0}, {1}, {2}, {3})".format(self.username, self.contactDetails_id ,self.dateCreated, self.lastLogin)
+        return "({0}, {1}, {2}, {3})".format(self.username, self.firstName, self.lastName, self.dateCreated, self.lastLogin)
 class VolunteerCV(Base):
     __tablename__ = "volunteerCV"
 
@@ -75,26 +65,26 @@ class AccountRoles(Base):
     def __repr__(self): 
         return "({0}, {1})".format(self.userAccountId, self.roles_id)
 
-class Employer(Base):
-    __tablename__ = "employer"
+class CompanyDetails(Base):
+    __tablename__ = "companyDetails"
 
     id = Column(Integer, primary_key=True, index=True)
-    companyName = Column(Integer, ForeignKey("userAccount.id", ondelete="CASCADE"), nullable=False)
-    industry_id = Column(Integer, ForeignKey("industry.id", ondelete="CASCADE"), nullable=False)
+    companyName = Column(String, nullable=False)
     companyDescription = Column(String, nullable=True)
+    industry_id = Column(Integer, ForeignKey("industry.id", ondelete="CASCADE"), nullable=False)
 
-class EmployerContacts(Base):
-    __tablename__ = "employerContacts"
+class CompanyRepresentative(Base):
+    __tablename__ = "companyRepresentative"
 
     id = Column(Integer, primary_key=True, index=True)
-    ContactDetails_id = Column(Integer, ForeignKey("contactDetails.id", ondelete="CASCADE"), nullable=False)
-    employer_id = Column(Integer, ForeignKey("employer.id", ondelete="CASCADE"), nullable=False)
+    company_id = Column(Integer, ForeignKey("companyDetails.id", ondelete="CASCADE"), nullable=False)
+    userAccount_id = Column(Integer, ForeignKey("userAccount.id", ondelete="CASCADE"), nullable=False)
 
 class Jobs(Base):
     __tablename__ = "jobs"
 
     id = Column(Integer, primary_key=True, index=True)
-    employer_id = Column(Integer, ForeignKey("employer.id", ondelete="CASCADE"), index=True)
+    employer_id = Column(Integer, ForeignKey("companyRepresentative.id", ondelete="CASCADE"), index=True)
     category_id = Column(Integer, ForeignKey("category.id", ondelete="CASCADE"), index=True)
     jobDescription = Column(String, nullable=False)
     jobTitle = Column(String, nullable=False)
@@ -112,7 +102,7 @@ class UserVolunteeringHistory(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("userAccount.id", ondelete="CASCADE"), index=True)
-    job_id = Column(Integer, ForeignKey("jobs.id", ondelete="CASCADE"), index=True)
+    job_id = Column(Integer, ForeignKey("jobs.id", ondelete="RESTRICT"), index=True)
 
 class Test(Base):
     __tablename__ = "test"
