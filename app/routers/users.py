@@ -28,7 +28,7 @@ def new_volunteer(user: NewAccountSchemaIn, db: Session = Depends(get_db)):
     role = AccountRoles.volunteer
 
     user_exists = userRepository.get_user_by_username(user.username, db)
-    if user_exists.first() != None: raise HTTPException(status.HTTP_409_CONFLICT, f"Email address: {user.username} already exists | Try resetting password")
+    if user_exists.first() != None: raise HTTPException(status.HTTP_409_CONFLICT, f"Email address: {user.username} already exists")
 
     contact_details = models.ContactDetails(
         firstName=user.firstName,
@@ -70,7 +70,7 @@ def new_employeer(user: NewAccountSchemaIn, db: Session = Depends(get_db)):
     role = AccountRoles.employer
 
     user_exists = userRepository.get_user_by_username(user.username, db)
-    if user_exists != None: raise HTTPException(status.HTTP_409_CONFLICT, f"Email address: {user.username} already exists | Try resetting password")
+    if user_exists.first() != None: raise HTTPException(status.HTTP_409_CONFLICT, f"Email address: {user.username} already exists")
 
     contact_details = models.ContactDetails(
         firstName=user.firstName,
@@ -78,7 +78,7 @@ def new_employeer(user: NewAccountSchemaIn, db: Session = Depends(get_db)):
         telephoneNumber=user.telephoneNumber
         )
 
-    contact_details = userRepository.create_new_contact_details(contact_details, db)
+    contact_details = contactRepository.create_new_contact_details(contact_details, db)
     
     user.password = utils.hash_pwd(user.password)
     new_user = models.UserAccount(
@@ -114,7 +114,7 @@ def new_recruiter(user: NewAccountSchemaIn, db: Session = Depends(get_db)):
     role = AccountRoles.recruiter
 
     user_exists = userRepository.get_user_by_username(user.username, db)
-    if user_exists != None: raise HTTPException(status.HTTP_409_CONFLICT, f"Email address: {user.username} already exists | Try resetting password")
+    if user_exists.first() != None: raise HTTPException(status.HTTP_409_CONFLICT, f"Email address: {user.username} already exists")
 
     contact_details = models.ContactDetails(
         firstName=user.firstName,
@@ -122,7 +122,7 @@ def new_recruiter(user: NewAccountSchemaIn, db: Session = Depends(get_db)):
         telephoneNumber=user.telephoneNumber
         )
 
-    contact_details = userRepository.create_new_contact_details(contact_details, db)
+    contact_details = contactRepository.create_new_contact_details(contact_details, db)
     
     user.password = utils.hash_pwd(user.password)
     new_user = models.UserAccount(

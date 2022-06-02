@@ -1,5 +1,6 @@
 from typing import Optional
 from datetime import datetime
+import re
 from pydantic import (
     BaseModel, 
     validator, 
@@ -26,6 +27,13 @@ class NewAccountSchemaIn(BaseModel):
         if password == "": raise ValueError("Password must not be empty")
         if len(password) < 8 : raise ValueError("Password must be 8 characters long")
         return password
+    
+    @validator("telephoneNumber")
+    def validate_telphone(cls, telephoneNumber):
+        telPattern = '^(0|\+44)(\d{10}|\d{2}\s\d{4}\s\d{4}|\s\d{4}\s\d{6})$'
+        validTel = re.match(telPattern, telephoneNumber)
+        if not validTel : raise ValueError("Invalid telephone number | Enter an 11 digit number beggining with 0 or +44")
+        return telephoneNumber
 
 class NewAccountSchemaOut(BaseModel):
     id: int
