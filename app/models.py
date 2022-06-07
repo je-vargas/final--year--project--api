@@ -95,7 +95,7 @@ class Jobs(Base):
     applicationDeadline = Column(Date, nullable=True)
     workHours = Column(String, nullable=True)
 
-    employer = relationship("Employer")
+    employer = relationship("CompanyRepresentative")
 
 class UserVolunteeringHistory(Base):
     __tablename__ = "userVolunteeringHistory"

@@ -58,8 +58,5 @@ class UpdateAccountSchema(BaseModel):
             raise ValueError("Username must not be empty")
         return username
 
-class UpdateAccountChangesSchema(UpdateAccountSchema):
-    contactDetails_id: Optional[int]
-
 
 

@@ -13,7 +13,7 @@ router = APIRouter(
 @router.post("/new", response_model=NewJobSchemaIn ,status_code=status.HTTP_200_OK)
 def add_job(new_job: NewJobSchemaIn, current_user: schemas.TokenData = Depends(outh2.get_current_user), db: Session = Depends(database.get_db)):
 
-    if current_user.role != 'employer':
+    if current_user.role.lower() != 'employer':
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
 
     print(new_job)

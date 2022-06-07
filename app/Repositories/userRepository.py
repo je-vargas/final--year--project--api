@@ -1,5 +1,5 @@
 from fastapi import Depends, HTTPException, status
-from ..models import ContactDetails, UserAccount, AccountRoles, Roles
+from ..models import UserAccount, AccountRoles, Roles
 
 def create_new_user(new_user: UserAccount, db):
     try:
@@ -56,14 +56,26 @@ def get_user_by_id(user_id, db):
     
     return user
 
+def check_unique_telephone(new_telephone, db):
+
+    user = None
+    try:
+        user = db.query(UserAccount).filter(UserAccount.telephoneNumber == new_telephone)
+    except Exception as e:
+        print(e)
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "\nCouln't fetch user with telephone: {0} | Error: {1}\n".format(new_telephone, e.orig.pgerror))
+    
+    return user
+
 def get_user_account_details_by_id(user_id, db):
 
     user_details = None
     try:
-        user_details = db.query(UserAccount, ContactDetails).\
+        user_details = db.query(UserAccount, AccountRoles, Roles).\
             filter(UserAccount.id == user_id).\
-            join(ContactDetails).\
-            filter(ContactDetails.id == UserAccount.contactDetails_id)
+            join(AccountRoles).filter(AccountRoles.userAccountId == UserAccount.id).\
+            join(Roles).filter(Roles.id == AccountRoles.roles_id)
+
 
     except Exception as e:
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "\nCouln't fetch user with id: {0} | Error: {1}\n".format(user_id, e.orig.pgerror))
@@ -74,9 +86,8 @@ def get_user_account_details_by_username(username, db):
 
     user_details = None
     try:
-        user_details = db.query(UserAccount, ContactDetails, AccountRoles, Roles).\
+        user_details = db.query(UserAccount, AccountRoles, Roles).\
             filter(UserAccount.username == username).\
-            join(ContactDetails).filter(ContactDetails.id == UserAccount.contactDetails_id).\
             join(AccountRoles).filter(AccountRoles.userAccountId == UserAccount.id).\
             join(Roles).filter(Roles.id == AccountRoles.roles_id)
 
