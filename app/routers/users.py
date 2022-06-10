@@ -4,15 +4,16 @@ from sqlalchemy.orm import Session
 
 from ..database import get_db
 from ..import models, utils, schemas, outh2
-from ..Schemas.usersSchemas import NewAccountSchemaIn, NewAccountSchemaOut, UpdateAccountSchema
+from ..Schemas.usersSchemas import *
 from ..Repositories import userRepository
+from enum import Enum
 
 router = APIRouter(
     prefix="/users",
     tags=["Users"]
     )
 
-from enum import Enum
+
 
 class AccountRoles(Enum):
     """Docstring for MyEnum."""
@@ -60,8 +61,10 @@ def new_volunteer(user: NewAccountSchemaIn, db: Session = Depends(get_db)):
     )
     return user_out
 
-@router.post("/new/employer", status_code=status.HTTP_201_CREATED)
-def new_employeer(user: NewAccountSchemaIn, db: Session = Depends(get_db)):
+@router.post("/new/employer", response_model=NewAccountCompanySchemaOut, status_code=status.HTTP_201_CREATED)
+def new_employeer(user: NewAccountCompanySchemaIn, db: Session = Depends(get_db)):
+
+    user_request = NewAccountCompanySchemaIn(**user)
 
     role = AccountRoles.employer
 
@@ -84,11 +87,23 @@ def new_employeer(user: NewAccountSchemaIn, db: Session = Depends(get_db)):
     new_user = userRepository.create_new_user(new_user, db)
 
     account_role = models.AccountRoles(userAccountId = new_user.id, roles_id = role.value)
-
     account_role = userRepository.create_account_role(account_role, db)
 
-    #: need to take infomration about the company
+    company_details = models.CompanyDetails(
+        companyName = user.companyName, 
+        companyDescription = user.companyDescription,
+        industry_id = IndustryDBMapper(user.industry)
+    )
+    new_company = userRepository.create_new_company(company_details, db)
+    
+    user_company_link = models.CompanyRepresentative(
+        company_id = new_company.id,
+        userAccount_id = new_user.id
+    )
 
+    new_company_user_limnk = userRepository.create_user_company_link(user_company_link, db)
+
+    # * update output values to include company , description, etc.
     user_out = NewAccountSchemaOut(
         id=new_user.id,
         username=new_user.username,
@@ -229,7 +244,7 @@ def delete_user_by_email(login: schemas.Email,  db: Session = Depends(get_db)): 
     
     if user_returned.first() == None: raise HTTPException(status.HTTP_404_NOT_FOUND, f"User with ID {login.username} does not exist")
     
-    userRepository.delete_user_by_object(user_returned, contact_details_returned, db)
+    userRepository.delete_user_by_object(user_returned, db)
     
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
@@ -238,9 +253,7 @@ def delete_user_by_id(user_id: int, db: Session = Depends(get_db),):
 
     user_returned = userRepository.get_user_by_id(user_id, db)
     if user_returned.first() == None: raise HTTPException(status.HTTP_404_NOT_FOUND, f"User with ID {user_id} does not exist")
-    
-    if contact_details_returned.first() == None: print( "\n LOG: {0}\n".format(HTTPException(status.HTTP_404_NOT_FOUND, f"User with ID {user_id} does not exist")))
 
-    userRepository.delete_user_by_object(user_returned, contact_details_returned, db)
+    userRepository.delete_user_by_object(user_returned, db)
     
     return Response(status_code=status.HTTP_204_NO_CONTENT)

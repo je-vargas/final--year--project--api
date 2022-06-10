@@ -1,5 +1,5 @@
 from fastapi import Depends, HTTPException, status
-from ..models import UserAccount, AccountRoles, Roles
+from ..models import UserAccount, AccountRoles, Roles, CompanyDetails, CompanyRepresentative
 
 def create_new_user(new_user: UserAccount, db):
     try:
@@ -20,6 +20,26 @@ def create_account_role(account_role: AccountRoles, db):
         raise HTTPException(status.HTTP_400_BAD_REQUEST, e.orig.pgerror)
 
     return account_role
+
+def create_new_company(company: CompanyDetails, db):
+    try:
+        db.add(company)
+        db.commit()
+        db.refresh(company)
+    except Exception as e:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, e.orig.pgerror)
+
+    return company
+
+def create_user_company_link(company_rep: CompanyRepresentative, db):
+    try:
+        db.add(company_rep)
+        db.commit()
+        db.refresh(company_rep)
+    except Exception as e:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, e.orig.pgerror)
+
+    return company_rep
 
 def update_user_account_by_id(id, user, db):
     try:
@@ -85,21 +105,24 @@ def get_user_account_details_by_id(user_id, db):
 def get_user_account_details_by_username(username, db):
 
     user_details = None
-    try:
+    try:        
         user_details = db.query(UserAccount, AccountRoles, Roles).\
-            filter(UserAccount.username == username).\
-            join(AccountRoles).filter(AccountRoles.userAccountId == UserAccount.id).\
-            join(Roles).filter(Roles.id == AccountRoles.roles_id)
+                select_from(UserAccount).\
+                    filter(UserAccount.username == username).\
+                join(AccountRoles).\
+                    filter(AccountRoles.userAccountId == UserAccount.id).\
+                join(Roles).\
+                    filter(Roles.id == AccountRoles.roles_id)
+        # print(user_details)
 
     except Exception as e:
-        raise HTTPException(status.HTTP_400_BAD_REQUEST, "\nCouln't fetch user with id: {0} | Error: {1}\n".format(user_id, e.orig.pgerror))
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "\nCouln't fetch user with username: {0} | Error: {1}\n".format(username, e.orig.pgerror))
     
     return user_details
 
-def delete_user_by_object(user, user_contact, db):
+def delete_user_by_object(user, db):
     try:
         user.delete(synchronize_session=False)
-        user_contact.delete(synchronize_session=False)
         db.commit()
     except Exception as e:
         raise HTTPException(status.HTTP_400_BAD_REQUEST, e.orig.pgerror)
