@@ -15,8 +15,7 @@ def authenticate(user_credentials: OAuth2PasswordRequestForm = Depends(), db: Se
 
     user = userRepository.get_user_account_details_by_username(user_credentials.username, db)
 
-    for user_found, contact, role_link, role in user.all():
-        pass
+    for user_found, role_link, role in user.all(): pass
 
     if user.all() == None: raise HTTPException(status.HTTP_404_NOT_FOUND, "Invaid credentials")
 
