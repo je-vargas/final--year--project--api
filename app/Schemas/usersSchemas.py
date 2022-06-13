@@ -15,11 +15,11 @@ class NewAccountCompanySchemaIn(BaseModel):
     firstName: str
     lastName: str
     telephoneNumber: str
+    dateCreated: datetime
+    lastLogin: datetime
     companyName: str
     companyDescription: str
     industry: IdustryEnum
-    dateCreated: datetime
-    lastLogin: datetime
 
     @validator("username")
     def validate_login_username(cls, username):

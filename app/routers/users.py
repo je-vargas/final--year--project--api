@@ -13,8 +13,6 @@ router = APIRouter(
     tags=["Users"]
     )
 
-
-
 class AccountRoles(Enum):
     """Docstring for MyEnum."""
     volunteer = 1
@@ -63,9 +61,6 @@ def new_volunteer(user: NewAccountSchemaIn, db: Session = Depends(get_db)):
 
 @router.post("/new/employer", response_model=NewAccountCompanySchemaOut, status_code=status.HTTP_201_CREATED)
 def new_employeer(user: NewAccountCompanySchemaIn, db: Session = Depends(get_db)):
-
-    user_request = NewAccountCompanySchemaIn(**user)
-
     role = AccountRoles.employer
 
     user_exists = userRepository.get_user_by_username(user.username, db)
@@ -89,10 +84,18 @@ def new_employeer(user: NewAccountCompanySchemaIn, db: Session = Depends(get_db)
     account_role = models.AccountRoles(userAccountId = new_user.id, roles_id = role.value)
     account_role = userRepository.create_account_role(account_role, db)
 
+    account_industry = user.industry.value
+    industry_db_id = None
+
+    for industry in IndustryDBMapper:
+        if industry.name.lower() == account_industry.lower(): 
+            industry_db_id = industry.value
+            break
+
     company_details = models.CompanyDetails(
         companyName = user.companyName, 
         companyDescription = user.companyDescription,
-        industry_id = IndustryDBMapper(user.industry)
+        industry_id = industry_db_id
     )
     new_company = userRepository.create_new_company(company_details, db)
     
@@ -104,13 +107,14 @@ def new_employeer(user: NewAccountCompanySchemaIn, db: Session = Depends(get_db)
     new_company_user_limnk = userRepository.create_user_company_link(user_company_link, db)
 
     # * update output values to include company , description, etc.
-    user_out = NewAccountSchemaOut(
+    user_out = NewAccountCompanySchemaOut(
         id=new_user.id,
         username=new_user.username,
         firstName=new_user.firstName,
         lastName=new_user.lastName,
         telephoneNumber=new_user.telephoneNumber,
         accountRoleId=role.value,
+        company = new_company.companyName,
         dateCreated=user.dateCreated
     )
     return user_out
@@ -139,16 +143,39 @@ def new_recruiter(user: NewAccountSchemaIn, db: Session = Depends(get_db)):
     new_user = userRepository.create_new_user(new_user, db)
 
     account_role = models.AccountRoles(userAccountId = new_user.id, roles_id = role.value)
-
     account_role = userRepository.create_account_role(account_role, db)
 
-    user_out = NewAccountSchemaOut(
+    account_industry = user.industry.value
+    industry_db_id = None
+
+    for industry in IndustryDBMapper:
+        if industry.name.lower() == account_industry.lower(): 
+            industry_db_id = industry.value
+            break
+
+    company_details = models.CompanyDetails(
+        companyName = user.companyName, 
+        companyDescription = user.companyDescription,
+        industry_id = industry_db_id
+    )
+    new_company = userRepository.create_new_company(company_details, db)
+    
+    user_company_link = models.CompanyRepresentative(
+        company_id = new_company.id,
+        userAccount_id = new_user.id
+    )
+
+    new_company_user_limnk = userRepository.create_user_company_link(user_company_link, db)
+
+    # * update output values to include company , description, etc.
+    user_out = NewAccountCompanySchemaOut(
         id=new_user.id,
         username=new_user.username,
         firstName=new_user.firstName,
         lastName=new_user.lastName,
         telephoneNumber=new_user.telephoneNumber,
         accountRoleId=role.value,
+        company = new_company.companyName,
         dateCreated=user.dateCreated
     )
     return user_out

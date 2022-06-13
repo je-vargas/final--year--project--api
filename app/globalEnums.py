@@ -114,6 +114,8 @@ class JobCategoryEnum(str, Enum):
     other = 'Other'
     
 class IdustryEnum(str, Enum):
+    def __str__(self):
+        return str(self.value)
     Aviation = "Aviation",
     Arts = "Arts",
     Business = "Business",
