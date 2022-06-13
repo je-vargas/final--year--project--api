@@ -51,9 +51,8 @@ class VolunteerSkills(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     userAccount_id = Column(Integer, ForeignKey("userAccount.id", ondelete="CASCADE"), nullable=False)
-    experience = Column(String)
+    yearOfStudy = Column(String)
     fieldOfStudy = Column(String)
-    degree = Column(String)
 
 class AccountRoles(Base):
     __tablename__ = "accountRoles"
