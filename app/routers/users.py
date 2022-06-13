@@ -48,13 +48,22 @@ def new_volunteer(user: NewAccountSchemaIn, db: Session = Depends(get_db)):
 
     account_role = userRepository.create_account_role(account_role, db)
 
+    user_skills = models.VolunteerSkills(
+        userAccount_id = new_user.id,
+        yearOfStudy = user.yearOfStudy,
+        fieldOfStudy = user.fieldOfStudy
+    )
+ 
+    new_user_skills = userRepository.create_user_skills_link(user_skills, db)
+
     user_out = NewAccountSchemaOut(
         id=new_user.id,
         username=new_user.username,
         firstName=new_user.firstName,
         lastName=new_user.lastName,
         telephoneNumber=new_user.telephoneNumber,
-        accountRoleId=role.value,
+        yearsOfStudy=new_user_skills.yearOfStudy,
+        fieldOfStudy=new_user_skills.fieldOfStudy,
         dateCreated=user.dateCreated
     )
     return user_out
@@ -120,7 +129,7 @@ def new_employeer(user: NewAccountCompanySchemaIn, db: Session = Depends(get_db)
     return user_out
 
 @router.post("/new/recruiter", status_code=status.HTTP_201_CREATED)
-def new_recruiter(user: NewAccountSchemaIn, db: Session = Depends(get_db)):
+def new_recruiter(user: NewAccountCompanySchemaIn, db: Session = Depends(get_db)):
 
     role = AccountRoles.recruiter
 
@@ -182,8 +191,8 @@ def new_recruiter(user: NewAccountSchemaIn, db: Session = Depends(get_db)):
 
 #: --------- UPDATE ---------
 
-@router.patch("/account/update", response_model=UpdateAccountSchema, status_code=status.HTTP_200_OK)
-def account_update(user_update: UpdateAccountSchema, db: Session = Depends(get_db)):
+@router.patch("/volunteer/update", response_model=UpdateVolunteerAccountSchema, status_code=status.HTTP_200_OK)
+def account_update(user_update: UpdateVolunteerAccountSchema, db: Session = Depends(get_db)):
 
     user = userRepository.get_user_account_details_by_id(user_update.id, db)
     if user.all() == []: raise HTTPException(status.HTTP_409_CONFLICT, f"User with id: {user_update.id} does not exist | Try registering")
@@ -191,7 +200,48 @@ def account_update(user_update: UpdateAccountSchema, db: Session = Depends(get_d
     existing_data = None
 
     for login, contact in user.all():
-        existing_data = UpdateAccountChangesSchema(
+        existing_data = UpdateVolunteerAccountSchema(
+            id=login.id,
+            username=login.username,
+            firstName=contact.firstName,
+            lastName=contact.lastName,
+            telephoneNumber=contact.telephoneNumber,
+            experience="",
+            fieldOfStudy="",
+            degree="" 
+        )
+    update_data_dict = dict(user_update)
+    existing_data_dict = dict(existing_data)
+
+    #* compare existing user to new update and returns values changed
+    changes = {value: update_data_dict[value] for value in update_data_dict if value in existing_data_dict and update_data_dict[value] != existing_data_dict[value]}    
+    
+    user_changes = {key:value for key, value in changes.items() if key == "username"}
+
+ 
+    if user_changes: 
+        user_id = existing_data_dict.get("id")
+        updated_user = userRepository.update_user_account_by_id(user_id, user_changes, db)
+
+    new_changes = UpdateAccountSchema(
+        id=updated_user.id, 
+        username=updated_user.username, 
+        firstName=updated_contact_details.firstName,
+        lastName=updated_contact_details.lastName, 
+        telephoneNumber=updated_contact_details.telephoneNumber
+    )
+    return new_changes
+
+@router.patch("/company/update", response_model=UpdateCompanyUserAccountSchema, status_code=status.HTTP_200_OK)
+def account_update(user_update: UpdateCompanyUserAccountSchema, db: Session = Depends(get_db)):
+
+    user = userRepository.get_user_account_details_by_id(user_update.id, db)
+    if user.all() == []: raise HTTPException(status.HTTP_409_CONFLICT, f"User with id: {user_update.id} does not exist | Try registering")
+
+    existing_data = None
+
+    for login, contact in user.all():
+        existing_data = UpdateCompanyUserAccountSchema(
             id=login.id,
             username=login.username,
             firstName=contact.firstName,

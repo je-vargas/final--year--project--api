@@ -1,5 +1,5 @@
 from fastapi import Depends, HTTPException, status
-from ..models import UserAccount, AccountRoles, Roles, CompanyDetails, CompanyRepresentative
+from ..models import UserAccount, AccountRoles, Roles, CompanyDetails, CompanyRepresentative, VolunteerSkills
 
 def create_new_user(new_user: UserAccount, db):
     try:
@@ -40,6 +40,16 @@ def create_user_company_link(company_rep: CompanyRepresentative, db):
         raise HTTPException(status.HTTP_400_BAD_REQUEST, e.orig.pgerror)
 
     return company_rep
+
+def create_user_skills_link(user_skills: VolunteerSkills, db):
+    try:
+        db.add(user_skills)
+        db.commit()
+        db.refresh(user_skills)
+    except Exception as e:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, e.orig.pgerror)
+
+    return user_skills
 
 def update_user_account_by_id(id, user, db):
     try:
@@ -95,8 +105,19 @@ def get_user_account_details_by_id(user_id, db):
             filter(UserAccount.id == user_id).\
             join(AccountRoles).filter(AccountRoles.userAccountId == UserAccount.id).\
             join(Roles).filter(Roles.id == AccountRoles.roles_id)
+    except Exception as e:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "\nCouln't fetch user with id: {0} | Error: {1}\n".format(user_id, e.orig.pgerror))
+    
+    return user_details
 
+def get_user_account_company_details_by_id(user_id, db):
 
+    user_details = None
+    try:
+        user_details = db.query(UserAccount, AccountRoles, Roles).\
+            filter(UserAccount.id == user_id).\
+            join(AccountRoles).filter(AccountRoles.userAccountId == UserAccount.id).\
+            join(Roles).filter(Roles.id == AccountRoles.roles_id)
     except Exception as e:
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "\nCouln't fetch user with id: {0} | Error: {1}\n".format(user_id, e.orig.pgerror))
     
