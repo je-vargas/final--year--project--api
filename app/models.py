@@ -83,7 +83,7 @@ class Jobs(Base):
     __tablename__ = "jobs"
 
     id = Column(Integer, primary_key=True, index=True)
-    employer_id = Column(Integer, ForeignKey("companyRepresentative.id", ondelete="CASCADE"), index=True)
+    companyRepresentative_id = Column(Integer, ForeignKey("companyRepresentative.id", ondelete="CASCADE"), index=True)
     category_id = Column(Integer, ForeignKey("category.id", ondelete="CASCADE"), index=True)
     jobDescription = Column(String, nullable=False)
     jobTitle = Column(String, nullable=False)
