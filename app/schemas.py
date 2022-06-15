@@ -55,6 +55,7 @@ class Token(BaseModel):
 
 class TokenData(BaseModel):
     id: Optional[str] = None
+    role: Optional[str] = None
 
 class EmployerOut(BaseModel):
     id: int

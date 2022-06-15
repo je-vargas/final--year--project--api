@@ -1,7 +1,11 @@
 from typing import Optional
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, status, HTTPException
 from sqlalchemy.orm import Session
-from .. import schemas, database, models, outh2
+from .. import database, models, outh2, schemas
+from ..Schemas.jobSchemas import *
+from ..Services import enumDBMapper
+from ..Services import enumMapper
+from ..Repositories import jobRepository, userRepository
 
 
 router = APIRouter(
@@ -9,24 +13,70 @@ router = APIRouter(
     tags=["Jobs"]
 )
 
-@router.post("/new", response_model=schemas.JobIn ,status_code=status.HTTP_200_OK)
-def add_job(new_job: schemas.JobIn, db: Session = Depends(database.get_db), current_user: models.UserAccount = Depends(outh2.get_current_user)):
+@router.post("/new", response_model=NewJobSchemaOut ,status_code=status.HTTP_200_OK)
+def add_job(job: NewJobSchemaIn, current_user: schemas.TokenData = Depends(outh2.get_current_user), db: Session = Depends(database.get_db)):
 
-    current_user.id
+    if current_user.role.lower() != 'employer':
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
+
+    category_id = enumDBMapper.category_name_to_id_db_mapper(job.jobCategory.value)
+    user = userRepository.get_company_account_details_by_id(current_user.id, db)
+
+    companyLink = None
+
+    for user, companyLink, companyDetails, industry, account, role in user.all():
+        pass
+
+    company_representative_id = companyLink.id
+
+    new_job = models.Jobs(
+        companyRepresentative_id = company_representative_id,
+        category_id = category_id,
+        jobDescription = job.jobDescription,
+        jobTitle = job.jobTitle,
+        numberOfPositions = job.numberOfPositions,
+        onGoingFill = job.onGoingfill,
+        startDate = job.startDate,
+        endDate = job.endDate,
+        applicationDeadline = job.applicationDeadLine,
+        workHours = job.workHours.name,
+    )
+
+    new_job = jobRepository.create_new_job(new_job, db)
+    category = enumDBMapper.category_id_to_name_db_mapper(new_job.category_id)
+    hours = enumMapper.workHours_mapped_to_value(new_job.workHours)
+
+    response = NewJobSchemaOut(
+        jobCategory = category,
+        jobDescription = new_job.jobDescription ,
+        jobTitle = new_job.jobTitle,
+        numberOfPositions = new_job.numberOfPositions,
+        onGoingfill = new_job.onGoingFill,
+        startDate = new_job.startDate,
+        endDate = new_job.endDate,
+        applicationDeadLine = new_job.applicationDeadline,
+        workHours = hours,
+    )
+
+    return response
+
+@router.post("/new", response_model=NewJobSchemaOut ,status_code=status.HTTP_200_OK)
+def delete_job(job: NewJobSchemaIn, current_user: schemas.TokenData = Depends(outh2.get_current_user), db: Session = Depends(database.get_db)):
+
+    if current_user.role.lower() != 'employer':
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
+
     
-    new_job.employer_id = current_user.id
-    # new_job.category_id = #* get the id of the category
 
-    db.add(instance)
-    db.commit()
-    db.refresh()
-    
-    return 
+    return response
 
-@router.get("/search", response_model=schemas.JobOut ,status_code=status.HTTP_200_OK)
+
+@router.get("/search", response_model=JobCategoryEnum ,status_code=status.HTTP_200_OK)
 def get_jobs_by_jobTitle(db: Session = Depends(database.get_db), limit: int = 0, skip: int = 0, search:Optional[str]=""):
 
     jobs_found = db.query(models.Jobs).filter(models.Jobs.jobTitle.coun).limit(limit).offset(skip).all()
 
     return jobs_found
+
+
 
