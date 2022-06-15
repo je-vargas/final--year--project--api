@@ -1,5 +1,5 @@
 from fastapi import Depends, HTTPException, status
-from ..models import UserAccount, AccountRoles, Roles, CompanyDetails, CompanyRepresentative, VolunteerSkills
+from ..models import *
 
 def create_new_user(new_user: UserAccount, db):
     try:
@@ -63,6 +63,43 @@ def update_user_account_by_id(id, user, db):
 
     return user_update
 
+def update_user_account_skills_by_id(id, skills, db):
+    try:
+        query = db.query(VolunteerSkills).filter(VolunteerSkills.userAccount_id == id)
+        query.update(skills, synchronize_session=False)
+        db.commit()
+        
+    except Exception as e:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, e.orig.pgerror)
+
+    return user_update
+
+def update_company_by_id(company_id, company, db):
+    try:
+        query = db.query(CompanyDetails).filter(CompanyDetails.id == company_id).\
+            update(company, synchronize_session=False)
+        db.commit()
+
+        user_company_link = db.query(CompanyDetails).filter(CompanyDetails.id == company_id)
+
+    except Exception as e:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, e.orig.pgerror)
+
+    return user_company_link.first()
+
+def update_company_industry_by_id(company_id, industry_id, db):
+    try:
+        query = db.query(CompanyDetails).filter(CompanyDetails.id == company_id).\
+            update({"industry_id" : industry_id}, synchronize_session=False)
+        db.commit()
+        
+        industry_update = db.query(CompanyDetails).filter(CompanyDetails.id == company_id)
+
+    except Exception as e:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, e.orig.pgerror)
+
+    return industry_update.first()
+    
 
 def get_user_by_username(username, db):
 
@@ -97,12 +134,13 @@ def check_unique_telephone(new_telephone, db):
     
     return user
 
-def get_user_account_details_by_id(user_id, db):
+def get_volunteer_account_details_by_id(user_id, db):
 
     user_details = None
     try:
-        user_details = db.query(UserAccount, AccountRoles, Roles).\
+        user_details = db.query(UserAccount, VolunteerSkills, AccountRoles, Roles).\
             filter(UserAccount.id == user_id).\
+            join(VolunteerSkills).filter(VolunteerSkills.userAccount_id == UserAccount.id).\
             join(AccountRoles).filter(AccountRoles.userAccountId == UserAccount.id).\
             join(Roles).filter(Roles.id == AccountRoles.roles_id)
     except Exception as e:
@@ -110,14 +148,17 @@ def get_user_account_details_by_id(user_id, db):
     
     return user_details
 
-def get_user_account_company_details_by_id(user_id, db):
+def get_company_account_details_by_id(user_id, db):
 
     user_details = None
     try:
-        user_details = db.query(UserAccount, AccountRoles, Roles).\
-            filter(UserAccount.id == user_id).\
-            join(AccountRoles).filter(AccountRoles.userAccountId == UserAccount.id).\
-            join(Roles).filter(Roles.id == AccountRoles.roles_id)
+        user_details = db.query(UserAccount, CompanyRepresentative, CompanyDetails, Industry, AccountRoles, Roles).\
+            join(CompanyRepresentative, CompanyRepresentative.userAccount_id == UserAccount.id ).\
+            join(CompanyDetails, CompanyDetails.id == CompanyRepresentative.company_id).\
+            join(Industry, Industry.id == CompanyDetails.industry_id).\
+            join(AccountRoles, AccountRoles.userAccountId == UserAccount.id).\
+            join(Roles, Roles.id == AccountRoles.roles_id).\
+            filter(UserAccount.id == user_id)
     except Exception as e:
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "\nCouln't fetch user with id: {0} | Error: {1}\n".format(user_id, e.orig.pgerror))
     
@@ -134,7 +175,6 @@ def get_user_account_details_by_username(username, db):
                     filter(AccountRoles.userAccountId == UserAccount.id).\
                 join(Roles).\
                     filter(Roles.id == AccountRoles.roles_id)
-        # print(user_details)
 
     except Exception as e:
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "\nCouln't fetch user with username: {0} | Error: {1}\n".format(username, e.orig.pgerror))

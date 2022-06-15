@@ -6,6 +6,7 @@ from ..database import get_db
 from ..import models, utils, schemas, outh2
 from ..Schemas.usersSchemas import *
 from ..Repositories import userRepository
+from ..Services import enumDBMapper
 from enum import Enum
 
 router = APIRouter(
@@ -96,10 +97,7 @@ def new_employeer(user: NewAccountCompanySchemaIn, db: Session = Depends(get_db)
     account_industry = user.industry.value
     industry_db_id = None
 
-    for industry in IndustryDBMapper:
-        if industry.name.lower() == account_industry.lower(): 
-            industry_db_id = industry.value
-            break
+    industry_db_id = enumDBMapper.industry_name_to_id_db_mapper(account_industry)
 
     company_details = models.CompanyDetails(
         companyName = user.companyName, 
@@ -122,7 +120,6 @@ def new_employeer(user: NewAccountCompanySchemaIn, db: Session = Depends(get_db)
         firstName=new_user.firstName,
         lastName=new_user.lastName,
         telephoneNumber=new_user.telephoneNumber,
-        accountRoleId=role.value,
         company = new_company.companyName,
         dateCreated=user.dateCreated
     )
@@ -157,10 +154,7 @@ def new_recruiter(user: NewAccountCompanySchemaIn, db: Session = Depends(get_db)
     account_industry = user.industry.value
     industry_db_id = None
 
-    for industry in IndustryDBMapper:
-        if industry.name.lower() == account_industry.lower(): 
-            industry_db_id = industry.value
-            break
+    industry_db_id = enumDBMapper.industry_name_to_id_db_mapper(account_industry)
 
     company_details = models.CompanyDetails(
         companyName = user.companyName, 
@@ -183,32 +177,30 @@ def new_recruiter(user: NewAccountCompanySchemaIn, db: Session = Depends(get_db)
         firstName=new_user.firstName,
         lastName=new_user.lastName,
         telephoneNumber=new_user.telephoneNumber,
-        accountRoleId=role.value,
         company = new_company.companyName,
         dateCreated=user.dateCreated
     )
     return user_out
 
-#: --------- UPDATE ---------
+#: --------------------------- UPDATE ---------------------------
 
 @router.patch("/volunteer/update", response_model=UpdateVolunteerAccountSchema, status_code=status.HTTP_200_OK)
-def account_update(user_update: UpdateVolunteerAccountSchema, db: Session = Depends(get_db)):
+def account_update_volunteer(user_update: UpdateVolunteerAccountSchema, db: Session = Depends(get_db)):
 
-    user = userRepository.get_user_account_details_by_id(user_update.id, db)
+    user = userRepository.get_volunteer_account_details_by_id(user_update.id, db)
     if user.all() == []: raise HTTPException(status.HTTP_409_CONFLICT, f"User with id: {user_update.id} does not exist | Try registering")
 
     existing_data = None
 
-    for login, contact in user.all():
+    for user, skills, account, role in user.all():
         existing_data = UpdateVolunteerAccountSchema(
-            id=login.id,
-            username=login.username,
-            firstName=contact.firstName,
-            lastName=contact.lastName,
-            telephoneNumber=contact.telephoneNumber,
-            experience="",
-            fieldOfStudy="",
-            degree="" 
+            id=user.id,
+            username=user.username,
+            firstName=user.firstName,
+            lastName=user.lastName,
+            telephoneNumber=user.telephoneNumber,
+            yearOfStudy=skills.yearOfStudy,
+            fieldOfStudy=skills.fieldOfStudy,
         )
     update_data_dict = dict(user_update)
     existing_data_dict = dict(existing_data)
@@ -216,37 +208,47 @@ def account_update(user_update: UpdateVolunteerAccountSchema, db: Session = Depe
     #* compare existing user to new update and returns values changed
     changes = {value: update_data_dict[value] for value in update_data_dict if value in existing_data_dict and update_data_dict[value] != existing_data_dict[value]}    
     
-    user_changes = {key:value for key, value in changes.items() if key == "username"}
+    user_changes = {key:value for key, value in changes.items() if key == "firstName" or key == "lastName" or key == "telephoneNumber" }
+    skills_changes = {key:value for key, value in changes.items() if key == "yearOfStudy" or key == "fieldOfStudy"}
 
  
-    if user_changes: 
-        user_id = existing_data_dict.get("id")
-        updated_user = userRepository.update_user_account_by_id(user_id, user_changes, db)
+    user_id = existing_data_dict.get("id")
+    updated_user = user
+    update_skills = skills
 
-    new_changes = UpdateAccountSchema(
+    if user_changes: updated_user = userRepository.update_user_account_by_id(user_id, user_changes, db)
+    if skills_changes: update_skills = userRepository.update_user_account_skills_by_id(user_id, skills_changes, db)
+
+
+    new_changes = UpdateVolunteerAccountSchema(
         id=updated_user.id, 
         username=updated_user.username, 
-        firstName=updated_contact_details.firstName,
-        lastName=updated_contact_details.lastName, 
-        telephoneNumber=updated_contact_details.telephoneNumber
+        firstName=updated_user.firstName,
+        lastName=updated_user.lastName, 
+        telephoneNumber=updated_user.telephoneNumber, 
+        yearOfStudy = update_skills.yearOfStudy,
+        fieldOfStudy = update_skills.fieldOfStudy
     )
     return new_changes
 
 @router.patch("/company/update", response_model=UpdateCompanyUserAccountSchema, status_code=status.HTTP_200_OK)
-def account_update(user_update: UpdateCompanyUserAccountSchema, db: Session = Depends(get_db)):
+def account_update_company(user_update: UpdateCompanyUserAccountSchema, db: Session = Depends(get_db)):
 
-    user = userRepository.get_user_account_details_by_id(user_update.id, db)
+    user = userRepository.get_company_account_details_by_id(user_update.id, db)
     if user.all() == []: raise HTTPException(status.HTTP_409_CONFLICT, f"User with id: {user_update.id} does not exist | Try registering")
 
     existing_data = None
 
-    for login, contact in user.all():
+    for user, companyLink, companyDetails, industry, account, role in user.all():
         existing_data = UpdateCompanyUserAccountSchema(
-            id=login.id,
-            username=login.username,
-            firstName=contact.firstName,
-            lastName=contact.lastName,
-            telephoneNumber=contact.telephoneNumber,
+            id=user.id,
+            username=user.username,
+            firstName=user.firstName,
+            lastName=user.lastName,
+            telephoneNumber=user.telephoneNumber,
+            companyName=companyDetails.companyName,
+            companyDescription=companyDetails.companyDescription,
+            industry=industry.industry
         )
     update_data_dict = dict(user_update)
     existing_data_dict = dict(existing_data)
@@ -254,19 +256,35 @@ def account_update(user_update: UpdateCompanyUserAccountSchema, db: Session = De
     #* compare existing user to new update and returns values changed
     changes = {value: update_data_dict[value] for value in update_data_dict if value in existing_data_dict and update_data_dict[value] != existing_data_dict[value]}    
     
-    user_changes = {key:value for key, value in changes.items() if key == "username"}
+    user_changes = {key:value for key, value in changes.items() if key == "firstName" or key == "lastName" or key == "telephoneNumber" }
+    company_changes = {key:value for key, value in changes.items() if key == "companyName" or key == "companyDescription"}
+    industry_changes = {key:value for key, value in changes.items() if key == "industry"}
 
- 
-    if user_changes: 
-        user_id = existing_data_dict.get("id")
-        updated_user = userRepository.update_user_account_by_id(user_id, user_changes, db)
+    user_id = existing_data_dict.get("id")
 
-    new_changes = UpdateAccountSchema(
+    updated_user = user
+    update_company = companyDetails
+    updated_industry = industry.industry
+
+    if user_changes: updated_user = userRepository.update_user_account_by_id(user_id, user_changes, db)
+    if company_changes: update_company = userRepository.update_company_by_id(companyLink.company_id, company_changes, db)
+    if industry_changes: 
+        industry_enum = industry_changes.get("industry")
+        new_industry_id = enumDBMapper.industry_name_to_id_db_mapper(industry_enum.value)
+        updated_industry = userRepository.update_company_industry_by_id(companyLink.company_id, new_industry_id, db)
+        updated_industry = updated_industry
+        updated_industry = enumDBMapper.industry_id_to_name_db_mapper(updated_industry.industry_id)
+
+
+    new_changes = UpdateCompanyUserAccountSchema(
         id=updated_user.id, 
         username=updated_user.username, 
-        firstName=updated_contact_details.firstName,
-        lastName=updated_contact_details.lastName, 
-        telephoneNumber=updated_contact_details.telephoneNumber
+        firstName=updated_user.firstName,
+        lastName=updated_user.lastName, 
+        telephoneNumber=updated_user.telephoneNumber,
+        companyName=update_company.companyName,
+        companyDescription=update_company.companyDescription,
+        industry=updated_industry
     )
     return new_changes
 

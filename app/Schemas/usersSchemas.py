@@ -140,7 +140,6 @@ class NewAccountCompanySchemaOut(BaseModel):
     firstName: str
     lastName: str
     telephoneNumber: str
-    accountRoleId: int
     company: str
     dateCreated: datetime
 
@@ -152,43 +151,6 @@ class UpdateVolunteerAccountSchema(BaseModel):
     telephoneNumber: Optional[str] = None
     yearOfStudy: Optional[str] = None
     fieldOfStudy: Optional[str] = None
-
-    @validator("username")
-    def validate_login_username(cls, username):
-        if username == "": 
-            raise ValueError("Username must not be empty")
-        return username
-    
-    @validator("firstName")
-    def validate_login_firstName(cls, firstName):
-        if firstName == "": 
-            raise ValueError("First name must not be empty")
-        return username
-    
-    @validator("lastName")
-    def validate_login_lastName(cls, lastName):
-        if lastName == "": 
-            raise ValueError("Last name must not be empty")
-        return username
-    
-    @validator("telephoneNumber")
-    def validate_telphone(cls, telephoneNumber):
-        telPattern = '^(0|\+44)(\d{10}|\d{2}\s\d{4}\s\d{4}|\s\d{4}\s\d{6})$'
-        validTel = re.match(telPattern, telephoneNumber)
-        if not validTel : raise ValueError("Invalid telephone number | Enter an 11 digit number beggining with 0 or +44")
-        return telephoneNumber
-
-    @validator("yearOfStudy")
-    def validate_company(cls, yearOfStudy):
-        if yearOfStudy == "": 
-            raise ValueError(" Year of study must not be empty")
-        return 
-    
-    @validator("fieldOfStudy")
-    def validate_company_description(cls, fieldOfStudy):
-        if fieldOfStudy == "": 
-            raise ValueError(" Field of study must not be empty")
-        return
 
 class UpdateCompanyUserAccountSchema(BaseModel):
     id: int
@@ -210,13 +172,13 @@ class UpdateCompanyUserAccountSchema(BaseModel):
     def validate_login_firstName(cls, firstName):
         if firstName == "": 
             raise ValueError("First name must not be empty")
-        return username
+        return firstName
     
     @validator("lastName")
     def validate_login_lastName(cls, lastName):
         if lastName == "": 
             raise ValueError("Last name must not be empty")
-        return username
+        return lastName
     
     @validator("telephoneNumber")
     def validate_telphone(cls, telephoneNumber):
@@ -229,16 +191,16 @@ class UpdateCompanyUserAccountSchema(BaseModel):
     def validate_company(cls, companyName):
         if companyName == "": 
             raise ValueError(" Company name must not be empty")
-        return 
+        return companyName
     
     @validator("companyDescription")
     def validate_company_description(cls, companyDescription):
         if companyDescription == "": 
             raise ValueError(" Company Description must not be empty")
-        return 
+        return companyDescription
     
     @validator("industry")
     def validate_industry(cls, industry):
         if industry == "": 
             raise ValueError(" Industry must not be empty")
-        return 
+        return industry
