@@ -1,4 +1,4 @@
-from fastapi import Depends, HTTPException, status
+from fastapi import HTTPException, status
 from ..models import *
 
 def create_new_user(new_user: UserAccount, db):
