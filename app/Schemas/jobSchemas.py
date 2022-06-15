@@ -18,5 +18,16 @@ class NewJobSchemaIn(BaseModel):
     applicationDeadLine: Optional[date]
     workHours: Optional[WorkHoursEnum]
 
+class NewJobSchemaOut(BaseModel):
+    jobCategory: JobCategoryEnum
+    jobDescription: str
+    jobTitle: str
+    numberOfPositions: int
+    onGoingfill: bool
+    startDate: Optional[date]
+    endDate: Optional[date]
+    applicationDeadLine: Optional[date]
+    workHours: Optional[WorkHoursEnum]
+
 
 
