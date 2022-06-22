@@ -1,4 +1,4 @@
-from ..globalEnums import IndustryDBMapper, CategoryDBMapper
+from ..globalEnums import IndustryDBMapper, CategoryDBMapper, WorkHoursEnum
 
 def industry_name_to_id_db_mapper(idustry_name):
     for industry in IndustryDBMapper:
@@ -19,3 +19,9 @@ def category_id_to_name_db_mapper(category_id):
     for category in CategoryDBMapper:
             if category.value == category_id: 
                 return category.name 
+
+def workHours_db_mapper(hours_name):
+    for hours in WorkHoursEnum:
+            if hours.name.lower() == hours_name.lower(): 
+                return hours.value 
+

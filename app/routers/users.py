@@ -21,7 +21,7 @@ class AccountRoles(Enum):
     recruiter = 3
 
 
-#: --------- CREATE ---------
+#: --------------------------- CREATE ---------------------------
 @router.post("/new/volunteer", response_model=NewAccountSchemaOut, status_code=status.HTTP_201_CREATED)
 def new_volunteer(user: NewAccountSchemaIn, db: Session = Depends(get_db)):
 
@@ -289,7 +289,7 @@ def account_update_company(user_update: UpdateCompanyUserAccountSchema, db: Sess
     return new_changes
 
 
-#: --------- READ ---------
+#: --------------------------- READ ---------------------------
 
 @router.get("", status_code=status.HTTP_200_OK, response_model=List[schemas.UserOut])
 def get_all_users(db: Session = Depends(get_db)):
@@ -330,7 +330,7 @@ def get_user_job_history (user_id: int,  db: Session = Depends(get_db)):
 
 
 
-#: --------- DELETE ---------
+#: --------------------------- DELETE ---------------------------
 
 @router.delete("/delete", status_code=status.HTTP_200_OK)
 def delete_user_by_email(login: schemas.Email,  db: Session = Depends(get_db)): #,current_user: int = Depends(outh2.get_current_user)

@@ -8,26 +8,36 @@ from pydantic import (
     )
 
 class NewJobSchemaIn(BaseModel):
-    jobCategory: JobCategoryEnum
-    jobDescription: str
-    jobTitle: str
+    category: JobCategoryEnum
+    description: str
+    title: str
     numberOfPositions: int
-    onGoingfill: bool
+    onGoingFill: bool
     startDate: Optional[date]
     endDate: Optional[date]
-    applicationDeadLine: Optional[date]
+    applicationDeadline: Optional[date]
     workHours: Optional[WorkHoursEnum]
 
 class NewJobSchemaOut(BaseModel):
-    jobCategory: JobCategoryEnum
-    jobDescription: str
-    jobTitle: str
+    category: JobCategoryEnum
+    description: str
+    title: str
     numberOfPositions: int
-    onGoingfill: bool
+    onGoingFill: bool
     startDate: Optional[date]
     endDate: Optional[date]
-    applicationDeadLine: Optional[date]
+    applicationDeadline: Optional[date]
     workHours: Optional[WorkHoursEnum]
 
+class JobUpdateSchemaIn(BaseModel):
+    category: Optional[JobCategoryEnum] = None
+    description: Optional[str] = None
+    title: Optional[str] = None
+    numberOfPositions:Optional[int]
+    onGoingFill:Optional[bool]
+    startDate: Optional[date] = None
+    endDate: Optional[date] = None
+    applicationDeadline: Optional[date] = None
+    workHours: Optional[WorkHoursEnum] = None
 
 
