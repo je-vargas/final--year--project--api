@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, List
 from fastapi import APIRouter, Depends, status, HTTPException, Response
 from sqlalchemy.orm import Session
 from .. import database, models, outh2, schemas
@@ -12,6 +12,35 @@ router = APIRouter(
     prefix="/jobs", 
     tags=["Jobs"]
 )
+
+#: --------------------------- READ ---------------------------
+
+@router.get("", response_model=List[SearchShemaOut],  status_code=status.HTTP_200_OK) #response_model=List[SearchShemaOut],  
+def get_jobs_by_start_date(db: Session = Depends(database.get_db), limit: int = 10, skip:int = 0):
+
+    jobs_found = db.query(models.Jobs).order_by(models.Jobs.startDate).limit(limit).offset(skip)
+    jobs_found = jobs_found.all()
+
+    job_returns = list()
+
+    #! need to convert job returns into dictionary so they can be displayed under the response model
+    for job in jobs_found:
+        print(job)
+        # job_returns.append(dict(job))
+
+
+    return job_returns
+
+@router.get("/title",status_code=status.HTTP_200_OK) #response_model=NewJobSchemaOut 
+def get_jobs_by_jobTitle(db: Session = Depends(database.get_db), limit: int = 10, skip: int = 0, search:Optional[str]=""):
+
+    jobs_found = db.query(models.Jobs).filter(
+        models.Jobs.title.contains(search)).limit(limit).offset(skip)
+
+    jobs_found = jobs_found.all()
+    #! need to convert job returns into dictionary so they can be displayed under the response model
+
+    return jobs_found
 
 #: --------------------------- CREATE ---------------------------
 @router.post("/new", response_model=NewJobSchemaOut ,status_code=status.HTTP_200_OK)
@@ -36,10 +65,10 @@ def add_job(job: NewJobSchemaIn, current_user: schemas.TokenData = Depends(outh2
         description = job.description,
         title = job.title,
         numberOfPositions = job.numberOfPositions,
-        onGoingFill = job.onGoingfill,
+        onGoingFill = job.onGoingFill,
         startDate = job.startDate,
         endDate = job.endDate,
-        applicationDeadline = job.applicationDeadLine,
+        applicationDeadline = job.applicationDeadline,
         workHours = job.workHours.name,
     )
 
@@ -49,26 +78,18 @@ def add_job(job: NewJobSchemaIn, current_user: schemas.TokenData = Depends(outh2
 
     response = NewJobSchemaOut(
         category = category,
-        description = new_job.jobDescription ,
-        title = new_job.jobTitle,
+        description = new_job.description ,
+        title = new_job.title,
         numberOfPositions = new_job.numberOfPositions,
-        onGoingfill = new_job.onGoingFill,
+        onGoingFill = new_job.onGoingFill,
         startDate = new_job.startDate,
         endDate = new_job.endDate,
-        applicationDeadLine = new_job.applicationDeadline,
+        applicationDeadline = new_job.applicationDeadline,
         workHours = hours,
     )
 
     return response
 
-#: --------------------------- READ ---------------------------
-
-@router.get("/search", response_model=JobCategoryEnum ,status_code=status.HTTP_200_OK)
-def get_jobs_by_jobTitle(db: Session = Depends(database.get_db), limit: int = 0, skip: int = 0, search:Optional[str]=""):
-
-    jobs_found = db.query(models.Jobs).filter(models.Jobs.jobTitle.coun).limit(limit).offset(skip).all()
-
-    return jobs_found
 
 #: --------------------------- UPDATE ---------------------------
 

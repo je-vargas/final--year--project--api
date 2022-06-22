@@ -7,6 +7,20 @@ from pydantic import (
     EmailStr,
     )
 
+class SearchShemaOut(BaseModel):
+    category_id: Optional[int]
+    description: str
+    title: str
+    numberOfPositions: int
+    onGoingFill: Optional[bool]
+    startDate: Optional[date]
+    endDate: Optional[date]
+    applicationDeadline: Optional[date]
+    workHours: Optional[WorkHoursEnum]
+
+    class Config:
+        orm_mode = True
+
 class NewJobSchemaIn(BaseModel):
     category: JobCategoryEnum
     description: str
