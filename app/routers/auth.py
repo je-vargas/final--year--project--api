@@ -17,7 +17,7 @@ def authenticate(user_credentials: OAuth2PasswordRequestForm = Depends(), db: Se
 
     for user_found, role_link, role in user.all(): pass
 
-    if user.all() == None: raise HTTPException(status.HTTP_404_NOT_FOUND, "Invaid credentials")
+    if not bool(user.all()) or user.all() == None: raise HTTPException(status.HTTP_404_NOT_FOUND, "Invaid credentials")
 
     pwd_match = utils.verify_pwd(user_credentials.password, user_found.password)
 

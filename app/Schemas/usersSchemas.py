@@ -37,13 +37,13 @@ class NewAccountCompanySchemaIn(BaseModel):
     def validate_login_firstName(cls, firstName):
         if firstName == "": 
             raise ValueError("First name must not be empty")
-        return username
+        return firstName
     
     @validator("lastName")
     def validate_login_lastName(cls, lastName):
         if lastName == "": 
             raise ValueError("Last name must not be empty")
-        return username
+        return lastName
 
     @validator("telephoneNumber")
     def validate_telphone(cls, telephoneNumber):
@@ -55,20 +55,20 @@ class NewAccountCompanySchemaIn(BaseModel):
     @validator("companyName")
     def validate_company(cls, companyName):
         if companyName == "": 
-            raise ValueError(" Company name must not be empty")
-        return 
+            raise ValueError("Company name must not be empty")
+        return companyName
     
     @validator("companyDescription")
     def validate_company_description(cls, companyDescription):
         if companyDescription == "": 
-            raise ValueError(" Company Description must not be empty")
+            raise ValueError("Company Description must not be empty")
         return 
     
     @validator("industry")
     def validate_industry(cls, industry):
         if industry == "": 
-            raise ValueError(" Industry must not be empty")
-        return 
+            raise ValueError("Industry must not be empty")
+        return industry
 
 class NewAccountSchemaIn(BaseModel):
     username: EmailStr

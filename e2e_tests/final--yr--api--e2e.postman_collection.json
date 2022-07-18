@@ -1,0 +1,1564 @@
+{
+	"info": {
+		"_postman_id": "a7d07c8a-130a-40f7-bd42-07e8b30e733a",
+		"name": "final--yr--api--e2e",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "11638856"
+	},
+	"item": [
+		{
+			"name": "Health Check",
+			"item": [
+				{
+					"name": "API Health",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"postman.setEnvironmentVariable(\"access_token\", jsonData.access_token);",
+									"",
+									"pm.test(\"Search users status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response Error Message\", function () {",
+									"    pm.expect(jsonData.Health).to.eql(\"OK\");",
+									"});",
+									"",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8000/health",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"health"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Authentication",
+			"item": [
+				{
+					"name": "Authenticate Invalid User",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"",
+									"pm.test(\"Expected status code is 400\", function () {",
+									"    pm.response.to.have.status(404);",
+									"});",
+									"",
+									"pm.test(\"Response Error Message\", function () {",
+									"    pm.expect(jsonData.detail).to.eql(\"Invaid credentials\");",
+									"});",
+									"",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "username",
+									"value": "{{loginEmail}}",
+									"type": "text"
+								},
+								{
+									"key": "password",
+									"value": "{{loginPassword}}",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "http://localhost:8000/authenticate",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"authenticate"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Authenticate Valid User",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"postman.setEnvironmentVariable(\"access_token\", jsonData.access_token);",
+									"",
+									"pm.test(\"Search users status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response Message\", function () {",
+									"    pm.expect(jsonData.token_type).to.eql(\"bearer\");",
+									"});",
+									"",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "username",
+									"value": "{{validUser}}",
+									"type": "text"
+								},
+								{
+									"key": "password",
+									"value": "{{validUserPassword}}",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "http://localhost:8000/authenticate",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"authenticate"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "User",
+			"item": [
+				{
+					"name": "Create",
+					"item": [
+						{
+							"name": "Volunteer",
+							"item": [
+								{
+									"name": "Create Existing Volunteer Account",
+									"event": [
+										{
+											"listen": "prerequest",
+											"script": {
+												"exec": [
+													"var date = require('moment');",
+													"pm.environment.set(\"currentDate\", date().format());",
+													"",
+													""
+												],
+												"type": "text/javascript"
+											}
+										},
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"var jsonData = JSON.parse(responseBody);",
+													"postman.setEnvironmentVariable(\"access_token\", jsonData.access_token);",
+													"",
+													"pm.test(\"Expected status code is 409\", function () {",
+													"    pm.response.to.have.status(409);",
+													"});",
+													"",
+													"pm.test(\"Response Error Message\", function () {",
+													"    pm.expect(jsonData.detail).to.eql(\"Email address: volunteer@admin.com already exists\");",
+													"});",
+													""
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n    \"username\": \"volunteer@admin.com\",\n    \"password\": \"milaluna22\",\n    \"firstName\": \"Volunteer\",\n    \"lastName\": \"Admin\",\n    \"telephoneNumber\": \"010 0000 1001\",\n    \"yearOfStudy\": \"2\",\n    \"fieldOfStudy\": \"Geography\",\n    \"dateCreated\": \"{{currentDate}}\",\n    \"lastLogin\": \"{{currentDate}}\"\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "http://127.0.0.1:8000/users/new/volunteer",
+											"protocol": "http",
+											"host": [
+												"127",
+												"0",
+												"0",
+												"1"
+											],
+											"port": "8000",
+											"path": [
+												"users",
+												"new",
+												"volunteer"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Create New Volunteer Account",
+									"event": [
+										{
+											"listen": "prerequest",
+											"script": {
+												"exec": [
+													"var date = require('moment');",
+													"pm.environment.set(\"currentDate\", date().format());"
+												],
+												"type": "text/javascript"
+											}
+										},
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"var jsonData = JSON.parse(responseBody);",
+													"pm.environment.set(\"volunteerDeleteID\", jsonData.id);",
+													"postman.setEnvironmentVariable(\"access_token\", jsonData.access_token);",
+													"",
+													"pm.test(\"Expected status code is 201\", function () {",
+													"    pm.response.to.have.status(201);",
+													"});",
+													"",
+													"pm.test(\"Response ID equals\", function () {",
+													"    pm.expect(jsonData.id).to.eql(pm.environment.get(\"volunteerDeleteID\"));",
+													"});",
+													"pm.test(\"Response username equals\", function () {",
+													"    pm.expect(jsonData.username).to.eql(\"testAccount@test.com\");",
+													"});",
+													"pm.test(\"Response first name equals \", function () {",
+													"    pm.expect(jsonData.firstName).to.eql(\"Pepe\");",
+													"});",
+													"pm.test(\"Response last name equals \", function () {",
+													"    pm.expect(jsonData.lastName).to.eql(\"Guardiola\");",
+													"});",
+													"pm.test(\"Response telephone equals \", function () {",
+													"    pm.expect(jsonData.telephoneNumber).to.eql(\"07853112300\");",
+													"});",
+													"pm.test(\"Response study years equals\", function () {",
+													"    pm.expect(jsonData.yearsOfStudy).to.eql(1);",
+													"});",
+													"pm.test(\"Response field of study \", function () {",
+													"    pm.expect(jsonData.fieldOfStudy).to.eql(\"Maths\");",
+													"});",
+													"",
+													""
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n    \"username\": \"testAccount@test.com\",\n    \"password\": \"12345678\",\n    \"firstName\": \"Pepe\",\n    \"lastName\": \"Guardiola\",\n    \"telephoneNumber\": \"07853112300\",\n    \"yearOfStudy\": \"1\",\n    \"fieldOfStudy\": \"Maths\",\n    \"dateCreated\": \"{{currentDate}}\",\n    \"lastLogin\": \"{{currentDate}}\"\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "http://127.0.0.1:8000/users/new/volunteer",
+											"protocol": "http",
+											"host": [
+												"127",
+												"0",
+												"0",
+												"1"
+											],
+											"port": "8000",
+											"path": [
+												"users",
+												"new",
+												"volunteer"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Delete user by ID",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"pm.test(\"Expected status code is 204\", function () {",
+													"    pm.response.to.have.status(204);",
+													"});"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"method": "DELETE",
+										"header": [],
+										"url": {
+											"raw": "http://127.0.0.1:8000/users/delete/{{volunteerDeleteID}}",
+											"protocol": "http",
+											"host": [
+												"127",
+												"0",
+												"0",
+												"1"
+											],
+											"port": "8000",
+											"path": [
+												"users",
+												"delete",
+												"{{volunteerDeleteID}}"
+											]
+										}
+									},
+									"response": []
+								}
+							]
+						},
+						{
+							"name": "Recruiter",
+							"item": [
+								{
+									"name": "Create Existing Recruiter Account",
+									"event": [
+										{
+											"listen": "prerequest",
+											"script": {
+												"exec": [
+													"var date = require('moment');",
+													"pm.environment.set(\"currentDate\", date().format());"
+												],
+												"type": "text/javascript"
+											}
+										},
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"var jsonData = JSON.parse(responseBody);",
+													"",
+													"pm.test(\"Expected status code is 409\", function () {",
+													"    pm.response.to.have.status(409);",
+													"});",
+													"",
+													"pm.test(\"Response Error Message\", function () {",
+													"    pm.expect(jsonData.detail).to.eql(\"Email address: recruiter@admin.com already exists\");",
+													"});",
+													""
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n    \"username\": \"recruiter@admin.com\",\n    \"password\": \"milaluna22\",\n    \"firstName\": \"Recruiter\",\n    \"lastName\": \"Admin\",\n    \"telephoneNumber\": \"+44 2000 002000\",\n    \"dateCreated\": \"{{currentDate}}\",\n    \"lastLogin\": \"{{currentDate}}\",\n    \"companyName\":\"testCompany\",\n    \"companyDescription\":\"something about jobs\",\n    \"industry\":\"Other\"\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "http://127.0.0.1:8000/users/new/recruiter",
+											"protocol": "http",
+											"host": [
+												"127",
+												"0",
+												"0",
+												"1"
+											],
+											"port": "8000",
+											"path": [
+												"users",
+												"new",
+												"recruiter"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Create New Recruiter Account",
+									"event": [
+										{
+											"listen": "prerequest",
+											"script": {
+												"exec": [
+													"var date = require('moment');",
+													"pm.environment.set(\"currentDate\", date().format());"
+												],
+												"type": "text/javascript"
+											}
+										},
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"var jsonData = JSON.parse(responseBody);",
+													"pm.environment.set(\"employerDeleteEmail\", jsonData.username);",
+													"",
+													"pm.test(\"Expected status code is 201\", function () {",
+													"    pm.response.to.have.status(201);",
+													"});",
+													"",
+													"pm.test(\"Response username equals\", function () {",
+													"    pm.expect(jsonData.username).to.eql(\"test@recruiter.com\");",
+													"});",
+													"pm.test(\"Response first name equals \", function () {",
+													"    pm.expect(jsonData.firstName).to.eql(\"Ben\");",
+													"});",
+													"pm.test(\"Response last name equals \", function () {",
+													"    pm.expect(jsonData.lastName).to.eql(\"Smith\");",
+													"});",
+													"pm.test(\"Response telephone equals \", function () {",
+													"    pm.expect(jsonData.telephoneNumber).to.eql(\"+44 4055 122000\");",
+													"});",
+													"pm.test(\"Response company equals\", function () {",
+													"    pm.expect(jsonData.company).to.eql(\"testCompany\");",
+													"});",
+													"",
+													"",
+													""
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n    \"username\": \"test@recruiter.com\",\n    \"password\": \"milaluna22\",\n    \"firstName\": \"Ben\",\n    \"lastName\": \"Smith\",\n    \"telephoneNumber\": \"+44 4055 122000\",\n    \"dateCreated\": \"{{currentDate}}\",\n    \"lastLogin\": \"{{currentDate}}\",\n    \"companyName\":\"testCompany\",\n    \"companyDescription\":\"something about jobs\",\n    \"industry\":\"Other\"\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "http://127.0.0.1:8000/users/new/recruiter",
+											"protocol": "http",
+											"host": [
+												"127",
+												"0",
+												"0",
+												"1"
+											],
+											"port": "8000",
+											"path": [
+												"users",
+												"new",
+												"recruiter"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Delete Recruter by email",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"pm.test(\"Expected status code is 204\", function () {",
+													"    pm.response.to.have.status(204);",
+													"});"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"method": "DELETE",
+										"header": [],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n    \"username\": \"{{employerDeleteEmail}}\"\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "http://127.0.0.1:8000/users/delete/",
+											"protocol": "http",
+											"host": [
+												"127",
+												"0",
+												"0",
+												"1"
+											],
+											"port": "8000",
+											"path": [
+												"users",
+												"delete",
+												""
+											]
+										}
+									},
+									"response": []
+								}
+							]
+						},
+						{
+							"name": "Employer Create Validation",
+							"item": [
+								{
+									"name": "Account Invalid Username",
+									"event": [
+										{
+											"listen": "prerequest",
+											"script": {
+												"exec": [
+													"var date = require('moment');",
+													"pm.environment.set(\"currentDate\", date().format());"
+												],
+												"type": "text/javascript"
+											}
+										},
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"var jsonData = JSON.parse(responseBody);",
+													"",
+													"pm.test(\"Expected status code is 422\", function () {",
+													"    pm.response.to.have.status(422);",
+													"});",
+													"",
+													"pm.test(\"Invalid Email\", function () {",
+													"    pm.expect(jsonData.detail[0].msg).to.eq(\"value is not a valid email address\");",
+													"});",
+													""
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n    \"username\": \"ab\",\n    \"password\": \"milaluna22\",\n    \"firstName\": \"Ben\",\n    \"lastName\": \"Smith\",\n    \"telephoneNumber\": \"+44 4055 122000\",\n    \"dateCreated\": \"{{currentDate}}\",\n    \"lastLogin\": \"{{currentDate}}\",\n    \"companyName\":\"testCompany\",\n    \"companyDescription\":\"something about jobs\",\n    \"industry\":\"Other\"\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "http://127.0.0.1:8000/users/new/employer",
+											"protocol": "http",
+											"host": [
+												"127",
+												"0",
+												"0",
+												"1"
+											],
+											"port": "8000",
+											"path": [
+												"users",
+												"new",
+												"employer"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Account No Telephone",
+									"event": [
+										{
+											"listen": "prerequest",
+											"script": {
+												"exec": [
+													"var date = require('moment');",
+													"pm.environment.set(\"currentDate\", date().format());"
+												],
+												"type": "text/javascript"
+											}
+										},
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"var jsonData = JSON.parse(responseBody);",
+													"",
+													"pm.test(\"Expected status code is 422\", function () {",
+													"    pm.response.to.have.status(422);",
+													"});",
+													"",
+													"pm.test(\"Invalid Email\", function () {",
+													"    pm.expect(jsonData.detail[0].msg).to.eq(\"Invalid telephone number | Enter an 11 digit number beggining with 0 or +44\");",
+													"});",
+													""
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n    \"username\": \"testAccount@test.com\",\n    \"password\": \"12345678\",\n    \"firstName\": \"Pepe\",\n    \"lastName\": \"Guardiola\",\n    \"telephoneNumber\": \"\",\n    \"companyName\":\"Dusty\",\n    \"companyDescription\":\"Carpentry company, specialised in bespoken staircases and windowframes\",\n    \"industry\":\"Construction\",\n    \"dateCreated\": \"{{currentDate}}\",\n    \"lastLogin\": \"{{currentDate}}\"\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "http://127.0.0.1:8000/users/new/employer",
+											"protocol": "http",
+											"host": [
+												"127",
+												"0",
+												"0",
+												"1"
+											],
+											"port": "8000",
+											"path": [
+												"users",
+												"new",
+												"employer"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Account No Company",
+									"event": [
+										{
+											"listen": "prerequest",
+											"script": {
+												"exec": [
+													"var date = require('moment');",
+													"pm.environment.set(\"currentDate\", date().format());"
+												],
+												"type": "text/javascript"
+											}
+										},
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"var jsonData = JSON.parse(responseBody);",
+													"",
+													"pm.test(\"Expected status code is 422\", function () {",
+													"    pm.response.to.have.status(422);",
+													"});",
+													"",
+													"pm.test(\"Invalid Email\", function () {",
+													"    pm.expect(jsonData.detail[0].msg).to.eq(\"Company name must not be empty\");",
+													"});",
+													""
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n    \"username\": \"testAccount@test.com\",\n    \"password\": \"12345678\",\n    \"firstName\": \"Pepe\",\n    \"lastName\": \"Guardiola\",\n    \"telephoneNumber\": \"07773112344\",\n    \"companyName\":\"\",\n    \"companyDescription\":\"Carpentry company, specialised in bespoken staircases and windowframes\",\n    \"industry\":\"Construction\",\n    \"dateCreated\": \"{{currentDate}}\",\n    \"lastLogin\": \"{{currentDate}}\"\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "http://127.0.0.1:8000/users/new/employer",
+											"protocol": "http",
+											"host": [
+												"127",
+												"0",
+												"0",
+												"1"
+											],
+											"port": "8000",
+											"path": [
+												"users",
+												"new",
+												"employer"
+											]
+										}
+									},
+									"response": []
+								}
+							]
+						}
+					]
+				},
+				{
+					"name": "Update",
+					"item": [
+						{
+							"name": "Create Employer",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"var date = require('moment');",
+											"pm.environment.set(\"currentDate\", date().format());"
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"var jsonData = JSON.parse(responseBody);",
+											"pm.environment.set(\"updateEmployerID\", jsonData.id);",
+											"pm.environment.set(\"updateEmployerUsername\", jsonData.username);",
+											"",
+											"pm.test(\"Expected status code is 201\", function () {",
+											"    pm.response.to.have.status(201);",
+											"});",
+											"",
+											"pm.test(\"Expected ID to Equal\", function () {",
+											"    pm.expect(jsonData.id).to.eql(pm.environment.get(\"updateEmployerID\"));",
+											"});",
+											"",
+											"",
+											"",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"username\": \"employer@update.com\",\n    \"password\": \"password123\",\n    \"firstName\": \"update\",\n    \"lastName\": \"account\",\n    \"telephoneNumber\": \"+44 0000 122000\",\n    \"dateCreated\": \"{{currentDate}}\",\n    \"lastLogin\": \"{{currentDate}}\",\n    \"companyName\":\"Update\",\n    \"companyDescription\":\"Update Account\",\n    \"industry\":\"Other\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://127.0.0.1:8000/users/new/employer",
+									"protocol": "http",
+									"host": [
+										"127",
+										"0",
+										"0",
+										"1"
+									],
+									"port": "8000",
+									"path": [
+										"users",
+										"new",
+										"employer"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Update Employer Details",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"var jsonData = JSON.parse(responseBody);",
+											"",
+											"pm.test(\"Expected status code is 200\", function () {",
+											"    pm.response.to.have.status(200);",
+											"});",
+											"",
+											"pm.test(\"Response first name equals \", function () {",
+											"    pm.expect(jsonData.firstName).to.eql(\"Clown\");",
+											"});",
+											"pm.test(\"Response last name equals \", function () {",
+											"    pm.expect(jsonData.lastName).to.eql(\"Pepper\");",
+											"});",
+											"pm.test(\"Response telephone equals \", function () {",
+											"    pm.expect(jsonData.telephoneNumber).to.eql(\"+447853112344\");",
+											"});",
+											"",
+											"pm.test(\"Response company equals\", function () {",
+											"    pm.expect(jsonData.companyName).to.eq(\"ABS\");",
+											"});",
+											"",
+											"pm.test(\"Response description equals\", function () {",
+											"    pm.expect(jsonData.companyDescription).to.eql(\"Tech company, Self driving cars\");",
+											"});",
+											"",
+											"pm.test(\"Response industry equals\", function () {",
+											"    pm.expect(jsonData.industry).to.eql(\"Technology\");",
+											"});",
+											"",
+											"",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "PATCH",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"id\": {{updateEmployerID}},\n    \"username\": \"{{updateEmployerUsername}}\",\n    \"password\": \"milaluna22\",\n    \"firstName\": \"Clown\",\n    \"lastName\": \"Pepper\",\n    \"telephoneNumber\": \"+447853112344\",\n    \"companyName\": \"ABS\",\n    \"companyDescription\": \"Tech company, Self driving cars\",\n    \"industry\": \"Technology\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://127.0.0.1:8000/users/company/update",
+									"protocol": "http",
+									"host": [
+										"127",
+										"0",
+										"0",
+										"1"
+									],
+									"port": "8000",
+									"path": [
+										"users",
+										"company",
+										"update"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Delete Test Employer",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Expected status code is 204\", function () {",
+											"    pm.response.to.have.status(204);",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "http://127.0.0.1:8000/users/delete/{{updateEmployerID}}",
+									"protocol": "http",
+									"host": [
+										"127",
+										"0",
+										"0",
+										"1"
+									],
+									"port": "8000",
+									"path": [
+										"users",
+										"delete",
+										"{{updateEmployerID}}"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Retrieve Users",
+					"item": [
+						{
+							"name": "Get user by Email",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"var jsonData = JSON.parse(responseBody);",
+											"pm.environment.set(\"validUserID\", jsonData.id);",
+											"",
+											"pm.test(\"Expected status code is 200\", function () {",
+											"    pm.response.to.have.status(200);",
+											"});",
+											"",
+											"pm.test(\"Expected Usernmae to Equal\", function () {",
+											"    pm.expect(jsonData.username).to.eql(pm.environment.get(\"validUser\"));",
+											"});",
+											"",
+											"",
+											"",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"username\":\"{{validUser}}\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://127.0.0.1:8000/users/email",
+									"protocol": "http",
+									"host": [
+										"127",
+										"0",
+										"0",
+										"1"
+									],
+									"port": "8000",
+									"path": [
+										"users",
+										"email"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get user by ID",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"var jsonData = JSON.parse(responseBody);",
+											"pm.environment.set(\"validUserID\", jsonData.id);",
+											"",
+											"pm.test(\"Expected status code is 200\", function () {",
+											"    pm.response.to.have.status(200);",
+											"});",
+											"",
+											"pm.test(\"Expected Usernmae to Equal\", function () {",
+											"    pm.expect(jsonData.username).to.eql(pm.environment.get(\"validUser\"));",
+											"});",
+											"",
+											"",
+											"",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://127.0.0.1:8000/users/{{validUserID}}",
+									"protocol": "http",
+									"host": [
+										"127",
+										"0",
+										"0",
+										"1"
+									],
+									"port": "8000",
+									"path": [
+										"users",
+										"{{validUserID}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get all users",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"var jsonData = JSON.parse(responseBody);",
+											"pm.environment.set(\"validUserID\", jsonData.id);",
+											"",
+											"pm.test(\"Expected status code is 200\", function () {",
+											"    pm.response.to.have.status(200);",
+											"});",
+											"",
+											"pm.test(\"Expected Usernmae to Equal\", function () {",
+											"    pm.expect(jsonData[0].username).to.eql(\"employer@admin.com\");",
+											"});",
+											"",
+											"pm.test(\"Expected Usernmae to Equal\", function () {",
+											"    pm.expect(jsonData[1].username).to.eql(\"recruiter@admin.com\");",
+											"});",
+											"",
+											"",
+											"",
+											"",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://127.0.0.1:8000/users",
+									"protocol": "http",
+									"host": [
+										"127",
+										"0",
+										"0",
+										"1"
+									],
+									"port": "8000",
+									"path": [
+										"users"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "Jobs",
+			"item": [
+				{
+					"name": "Authenticate",
+					"item": [
+						{
+							"name": "Authenticate Employer Role",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"var jsonData = JSON.parse(responseBody);",
+											"postman.setEnvironmentVariable(\"employer_token\", jsonData.access_token);",
+											"",
+											"pm.test(\"Search users status code is 200\", function () {",
+											"    pm.response.to.have.status(200);",
+											"});",
+											"",
+											"pm.test(\"Response Message\", function () {",
+											"    pm.expect(jsonData.token_type).to.eql(\"bearer\");",
+											"});",
+											"",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "username",
+											"value": "{{employerLoginEmail}}",
+											"type": "text"
+										},
+										{
+											"key": "password",
+											"value": "{{employerLoginPassword}}",
+											"type": "text"
+										}
+									]
+								},
+								"url": {
+									"raw": "http://localhost:8000/authenticate",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8000",
+									"path": [
+										"authenticate"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "New Job",
+					"item": [
+						{
+							"name": "New Job Post",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"var startDate = require('moment');",
+											"var applicationDeadline = require('moment');",
+											"",
+											"pm.environment.set(\"startDate\", startDate().format(\"yyyy-MM-DD\"));",
+											"pm.environment.set(\"applicationDeadline\", applicationDeadline().format(\"yyyy-MM-DD\"));"
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"var jsonData = JSON.parse(responseBody);",
+											"pm.environment.set(\"jobID\", jsonData.id);",
+											"",
+											"pm.test(\"Expected status code is 200\", function () {",
+											"    pm.response.to.have.status(200);",
+											"});",
+											"",
+											"pm.test(\"Response ID equals\", function () {",
+											"    pm.expect(jsonData.id).to.eql(pm.environment.get(\"jobID\"));",
+											"});",
+											"pm.test(\"Response category equals\", function () {",
+											"    pm.expect(jsonData.category).to.eql(\"Midwife\");",
+											"});",
+											"pm.test(\"Response numberOfPositions equals \", function () {",
+											"    pm.expect(jsonData.numberOfPositions).to.eql(1);",
+											"});",
+											"pm.test(\"Response workHours equals \", function () {",
+											"    pm.expect(jsonData.workHours).to.eql(\"6+\");",
+											"});",
+											"pm.test(\"Response onGoingFill equals \", function () {",
+											"    pm.expect(jsonData.onGoingFill).to.eql(\"False\");",
+											"});",
+											"",
+											"",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{employer_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"category\": \"Midwife\",\n    \"description\": \"Midwife needed for exeter hospital, working through the bank.\",\n    \"title\": \"Midwife\",\n    \"numberOfPositions\": 1,\n    \"onGoingFill\": false,\n    \"startDate\": \"{{startDate}}\",\n    \"applicationDeadline\": \"{{applicationDeadline}}\",\n    \"workHours\": \"6+\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://127.0.0.1:8000/jobs/new",
+									"protocol": "http",
+									"host": [
+										"127",
+										"0",
+										"0",
+										"1"
+									],
+									"port": "8000",
+									"path": [
+										"jobs",
+										"new"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Update Job",
+					"item": [
+						{
+							"name": "Update Job",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"var startDate = require('moment');",
+											"var applicationDeadline = require('moment');",
+											"",
+											"pm.environment.set(\"startDate\", startDate().format(\"yyyy-MM-DD\"));",
+											"pm.environment.set(\"applicationDeadline\", applicationDeadline().format(\"yyyy-MM-DD\"));"
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"var jsonData = JSON.parse(responseBody);",
+											"",
+											"pm.test(\"Expected status code is 200\", function () {",
+											"    pm.response.to.have.status(200);",
+											"});",
+											"",
+											"pm.test(\"Response title equals\", function () {",
+											"    pm.expect(jsonData.title).to.eql(\"Mad Birth Wizard\");",
+											"});",
+											"pm.test(\"Response numberOfPositions equals \", function () {",
+											"    pm.expect(jsonData.numberOfPositions).to.eql(1);",
+											"});",
+											"pm.test(\"Response onGoingFill equals \", function () {",
+											"    pm.expect(jsonData.onGoingFill).to.eql(true);",
+											"});",
+											"",
+											"",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{employer_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "PATCH",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"description\": \"Midwife needed for exeter hospital, working through the bank.\",\n    \"title\": \"Mad Birth Wizard\",\n    \"onGoingFill\": true\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://127.0.0.1:8000/jobs/{{jobID}}/update",
+									"protocol": "http",
+									"host": [
+										"127",
+										"0",
+										"0",
+										"1"
+									],
+									"port": "8000",
+									"path": [
+										"jobs",
+										"{{jobID}}",
+										"update"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Delete Job",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Expected status code is 204\", function () {",
+											"    pm.response.to.have.status(204);",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{employer_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "http://127.0.0.1:8000/jobs/{{jobID}}/delete",
+									"protocol": "http",
+									"host": [
+										"127",
+										"0",
+										"0",
+										"1"
+									],
+									"port": "8000",
+									"path": [
+										"jobs",
+										"{{jobID}}",
+										"delete"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Search Jobs",
+					"item": [
+						{
+							"name": "Search Jobs",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Expected status code is 200\", function () {",
+											"    pm.response.to.have.status(200);",
+											"});",
+											"",
+											"",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://127.0.0.1:8000/jobs/",
+									"protocol": "http",
+									"host": [
+										"127",
+										"0",
+										"0",
+										"1"
+									],
+									"port": "8000",
+									"path": [
+										"jobs",
+										""
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Search Jobs Query Parameter",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Expected status code is 200\", function () {",
+											"    pm.response.to.have.status(200);",
+											"});",
+											"",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://127.0.0.1:8000/jobs?limit=5&skip=10",
+									"protocol": "http",
+									"host": [
+										"127",
+										"0",
+										"0",
+										"1"
+									],
+									"port": "8000",
+									"path": [
+										"jobs"
+									],
+									"query": [
+										{
+											"key": "limit",
+											"value": "5"
+										},
+										{
+											"key": "skip",
+											"value": "10"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Search Job by Title",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"var jsonData = JSON.parse(responseBody);",
+											"",
+											"pm.test(\"Expected status code is 200\", function () {",
+											"    pm.response.to.have.status(200);",
+											"});",
+											"",
+											"pm.test(\"Response job 1 title equals\", function () {",
+											"    pm.expect(jsonData[0].title).to.eql(\"Midwife\");",
+											"});",
+											"pm.test(\"Response job 2 title equals\", function () {",
+											"    pm.expect(jsonData[1].title).to.eql(\"Midwife\");",
+											"});",
+											"",
+											"",
+											"",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://127.0.0.1:8000/jobs/search?title=Midwife",
+									"protocol": "http",
+									"host": [
+										"127",
+										"0",
+										"0",
+										"1"
+									],
+									"port": "8000",
+									"path": [
+										"jobs",
+										"search"
+									],
+									"query": [
+										{
+											"key": "title",
+											"value": "Midwife"
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "Recruitment",
+			"item": []
+		}
+	]
+}

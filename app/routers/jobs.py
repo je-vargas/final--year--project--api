@@ -29,6 +29,7 @@ def add_job(job: NewJobSchemaIn, current_user: schemas.TokenData = Depends(outh2
         pass
 
     company_representative_id = companyLink.id
+    job_date = job.applicationDeadline
 
     new_job = models.Jobs(
         companyRepresentative_id = company_representative_id,
@@ -36,10 +37,10 @@ def add_job(job: NewJobSchemaIn, current_user: schemas.TokenData = Depends(outh2
         description = job.description,
         title = job.title,
         numberOfPositions = job.numberOfPositions,
-        onGoingFill = job.onGoingfill,
+        onGoingFill = bool(job.onGoingFill),
         startDate = job.startDate,
         endDate = job.endDate,
-        applicationDeadline = job.applicationDeadLine,
+        applicationDeadline = job_date,
         workHours = job.workHours.name,
     )
 
@@ -47,12 +48,15 @@ def add_job(job: NewJobSchemaIn, current_user: schemas.TokenData = Depends(outh2
     category = enumDBMapper.category_id_to_name_db_mapper(new_job.category_id)
     hours = enumMapper.workHours_mapped_to_value(new_job.workHours)
 
+    jobFill = str(bool(new_job.onGoingFill))
+
     response = NewJobSchemaOut(
+        id = new_job.id,
         category = category,
-        description = new_job.jobDescription ,
-        title = new_job.jobTitle,
+        description = new_job.description ,
+        title = new_job.title,
         numberOfPositions = new_job.numberOfPositions,
-        onGoingfill = new_job.onGoingFill,
+        onGoingFill = jobFill,
         startDate = new_job.startDate,
         endDate = new_job.endDate,
         applicationDeadLine = new_job.applicationDeadline,
@@ -63,10 +67,17 @@ def add_job(job: NewJobSchemaIn, current_user: schemas.TokenData = Depends(outh2
 
 #: --------------------------- READ ---------------------------
 
-@router.get("/search", response_model=JobCategoryEnum ,status_code=status.HTTP_200_OK)
-def get_jobs_by_jobTitle(db: Session = Depends(database.get_db), limit: int = 0, skip: int = 0, search:Optional[str]=""):
+@router.get("/",status_code=status.HTTP_200_OK)
+def get_jobs(db: Session = Depends(database.get_db), limit: int = 10, skip: int = 0):
 
-    jobs_found = db.query(models.Jobs).filter(models.Jobs.jobTitle.coun).limit(limit).offset(skip).all()
+    jobs_found = db.query(models.Jobs).limit(limit).offset(skip).all()
+
+    return jobs_found
+
+@router.get("/search" ,status_code=status.HTTP_200_OK)
+def get_jobs_by_jobTitle(db: Session = Depends(database.get_db), limit: int = 10, skip: int = 0, title:Optional[str]=""):
+
+    jobs_found = db.query(models.Jobs).filter(models.Jobs.title == title).limit(limit).offset(skip).all()
 
     return jobs_found
 
@@ -80,6 +91,9 @@ def update_job(job_update: JobUpdateSchemaIn, job_id: int ,current_user: schemas
 
     employer_id = current_user.id
     job_user_match = jobRepository.get_job_by_id_and_employer_id(job_id, employer_id, db)
+
+    if job_user_match.all() == [] or job_user_match == None: 
+        raise HTTPException(status.HTTP_404_NOT_FOUND, f"Could not find jobs") 
 
     for companyRep, job in job_user_match.all(): 
         if job == None: raise HTTPException(status.HTTP_404_NOT_FOUND, f"Job with id: {job_id} was not found") 
