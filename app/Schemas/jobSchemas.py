@@ -13,21 +13,22 @@ class NewJobSchemaIn(BaseModel):
     title: str
     numberOfPositions: int
     onGoingFill: bool
-    startDate: Optional[date]
-    endDate: Optional[date]
-    applicationDeadline: Optional[date]
-    workHours: Optional[WorkHoursEnum]
+    startDate: Optional[date] = None
+    endDate: Optional[date] = None
+    applicationDeadline: Optional[date] = None
+    workHours: Optional[WorkHoursEnum] = None
 
 class NewJobSchemaOut(BaseModel):
+    id: int
     category: JobCategoryEnum
     description: str
     title: str
     numberOfPositions: int
-    onGoingFill: bool
-    startDate: Optional[date]
-    endDate: Optional[date]
-    applicationDeadline: Optional[date]
-    workHours: Optional[WorkHoursEnum]
+    onGoingFill: str
+    startDate: Optional[date] = None
+    endDate: Optional[date] = None
+    applicationDeadline: Optional[date] = None
+    workHours: Optional[WorkHoursEnum] = None
 
 class JobUpdateSchemaIn(BaseModel):
     category: Optional[JobCategoryEnum] = None
